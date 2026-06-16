@@ -1,5 +1,5 @@
 """
-Models for YourResourceModel
+Models for Product
 
 All of the models are stored in this module
 """
@@ -17,107 +17,71 @@ class DataValidationError(Exception):
     """Used for an data validation errors when deserializing"""
 
 
-class YourResourceModel(db.Model):
+class Product(db.Model):
     """
-    Class that represents a YourResourceModel
+    Class that represents a Product
     """
+
+    __tablename__ = "products"
+    __table_args__ = {"schema": "product"}
 
     ##################################################
     # Table Schema
     ##################################################
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(63))
-
-    # Todo: Place the rest of your schema here...
+    sku = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
+    price = db.Column(db.Numeric(10, 2), nullable=False)
+    image = db.Column(db.String(2000), nullable=False)
 
     def __repr__(self):
-        return f"<YourResourceModel {self.name} id=[{self.id}]>"
+        return f"<Product {self.name} sku=[{self.sku}]>"
 
-    def create(self):
-        """
-        Creates a YourResourceModel to the database
-        """
-        logger.info("Creating %s", self.name)
-        self.id = None  # pylint: disable=invalid-name
-        try:
-            db.session.add(self)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            logger.error("Error creating record: %s", self)
-            raise DataValidationError(e) from e
+    # def create(self):
+    #     """
+    #     Creates a Product to the database
+    #     """
+    #     logger.info("Creating %s", self.name)
+    #     try:
+    #         db.session.add(self)
+    #         db.session.commit()
+    #     except Exception as e:
+    #         db.session.rollback()
+    #         logger.error("Error creating record: %s", self)
+    #         raise DataValidationError(e) from e
 
-    def update(self):
-        """
-        Updates a YourResourceModel to the database
-        """
-        logger.info("Saving %s", self.name)
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            logger.error("Error updating record: %s", self)
-            raise DataValidationError(e) from e
+    # def serialize(self):
+    #     """Serializes a Product into a dictionary"""
+    #     return {
+    #         "sku": self.sku,
+    #         "name": self.name,
+    #         "description": self.description,
+    #         "price": float(self.price),
+    #         "image": self.image,
+    #     }
 
-    def delete(self):
-        """Removes a YourResourceModel from the data store"""
-        logger.info("Deleting %s", self.name)
-        try:
-            db.session.delete(self)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            logger.error("Error deleting record: %s", self)
-            raise DataValidationError(e) from e
+    # def deserialize(self, data):
+    #     """
+    #     Deserializes a Product from a dictionary
 
-    def serialize(self):
-        """Serializes a YourResourceModel into a dictionary"""
-        return {"id": self.id, "name": self.name}
-
-    def deserialize(self, data):
-        """
-        Deserializes a YourResourceModel from a dictionary
-
-        Args:
-            data (dict): A dictionary containing the resource data
-        """
-        try:
-            self.name = data["name"]
-        except AttributeError as error:
-            raise DataValidationError("Invalid attribute: " + error.args[0]) from error
-        except KeyError as error:
-            raise DataValidationError(
-                "Invalid YourResourceModel: missing " + error.args[0]
-            ) from error
-        except TypeError as error:
-            raise DataValidationError(
-                "Invalid YourResourceModel: body of request contained bad or no data "
-                + str(error)
-            ) from error
-        return self
-
-    ##################################################
-    # CLASS METHODS
-    ##################################################
-
-    @classmethod
-    def all(cls):
-        """Returns all of the YourResourceModels in the database"""
-        logger.info("Processing all YourResourceModels")
-        return cls.query.all()
-
-    @classmethod
-    def find(cls, by_id):
-        """Finds a YourResourceModel by it's ID"""
-        logger.info("Processing lookup for id %s ...", by_id)
-        return cls.query.session.get(cls, by_id)
-
-    @classmethod
-    def find_by_name(cls, name):
-        """Returns all YourResourceModels with the given name
-
-        Args:
-            name (string): the name of the YourResourceModels you want to match
-        """
-        logger.info("Processing name query for %s ...", name)
-        return cls.query.filter(cls.name == name)
+    #     Args:
+    #         data (dict): A dictionary containing the resource data
+    #     """
+    #     try:
+    #         self.sku = data["sku"]
+    #         self.name = data["name"]
+    #         self.description = data["description"]
+    #         self.price = data["price"]
+    #         self.image = data["image"]
+    #     except AttributeError as error:
+    #         raise DataValidationError("Invalid attribute: " + error.args[0]) from error
+    #     except KeyError as error:
+    #         raise DataValidationError(
+    #             "Invalid Product: missing " + error.args[0]
+    #         ) from error
+    #     except TypeError as error:
+    #         raise DataValidationError(
+    #             "Invalid Product: body of request contained bad or no data "
+    #             + str(error)
+    #         ) from error
+    #     return self
