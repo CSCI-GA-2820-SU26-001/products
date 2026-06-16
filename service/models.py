@@ -37,51 +37,86 @@ class Product(db.Model):
     def __repr__(self):
         return f"<Product {self.name} sku=[{self.sku}]>"
 
-    # def create(self):
-    #     """
-    #     Creates a Product to the database
-    #     """
-    #     logger.info("Creating %s", self.name)
-    #     try:
-    #         db.session.add(self)
-    #         db.session.commit()
-    #     except Exception as e:
-    #         db.session.rollback()
-    #         logger.error("Error creating record: %s", self)
-    #         raise DataValidationError(e) from e
+    def create(self):
+        """Creates a Product in the database"""
+        logger.info("Creating %s", self.name)
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error("Error creating record: %s", self)
+            raise DataValidationError(e) from e
 
-    # def serialize(self):
-    #     """Serializes a Product into a dictionary"""
-    #     return {
-    #         "sku": self.sku,
-    #         "name": self.name,
-    #         "description": self.description,
-    #         "price": float(self.price),
-    #         "image": self.image,
-    #     }
+    def update(self):
+        """Updates a Product in the database"""
+        logger.info("Saving %s", self.name)
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error("Error updating record: %s", self)
+            raise DataValidationError(e) from e
 
-    # def deserialize(self, data):
-    #     """
-    #     Deserializes a Product from a dictionary
+    def delete(self):
+        """Removes a Product from the database"""
+        logger.info("Deleting %s", self.name)
+        try:
+            db.session.delete(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error("Error deleting record: %s", self)
+            raise DataValidationError(e) from e
 
-    #     Args:
-    #         data (dict): A dictionary containing the resource data
-    #     """
-    #     try:
-    #         self.sku = data["sku"]
-    #         self.name = data["name"]
-    #         self.description = data["description"]
-    #         self.price = data["price"]
-    #         self.image = data["image"]
-    #     except AttributeError as error:
-    #         raise DataValidationError("Invalid attribute: " + error.args[0]) from error
-    #     except KeyError as error:
-    #         raise DataValidationError(
-    #             "Invalid Product: missing " + error.args[0]
-    #         ) from error
-    #     except TypeError as error:
-    #         raise DataValidationError(
-    #             "Invalid Product: body of request contained bad or no data "
-    #             + str(error)
-    #         ) from error
-    #     return self
+    def serialize(self):
+        """Serializes a Product into a dictionary"""
+        return {
+            "sku": self.sku,
+            "name": self.name,
+            "description": self.description,
+            "price": float(self.price),
+            "image": self.image,
+        }
+
+    def deserialize(self, data):
+        """
+        Deserializes a Product from a dictionary
+
+        Args:
+            data (dict): A dictionary containing the resource data
+        """
+        try:
+            self.sku = data["sku"]
+            self.name = data["name"]
+            self.description = data["description"]
+            self.price = data["price"]
+            self.image = data["image"]
+        except AttributeError as error:
+            raise DataValidationError("Invalid attribute: " + error.args[0]) from error
+        except KeyError as error:
+            raise DataValidationError(
+                "Invalid Product: missing " + error.args[0]
+            ) from error
+        except TypeError as error:
+            raise DataValidationError(
+                "Invalid Product: body of request contained bad or no data "
+                + str(error)
+            ) from error
+        return self
+
+    ##################################################
+    # CLASS METHODS
+    ##################################################
+
+    @classmethod
+    def all(cls):
+        """Returns all Products in the database"""
+        logger.info("Processing all Products")
+        return cls.query.all()
+
+    @classmethod
+    def find(cls, by_sku):
+        """Finds a Product by its SKU"""
+        logger.info("Processing lookup for sku %s ...", by_sku)
+        return cls.query.session.get(cls, by_sku)
