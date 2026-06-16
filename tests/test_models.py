@@ -22,6 +22,8 @@ Test cases for Product Model
 import os
 import logging
 from unittest import TestCase
+from unittest.mock import patch
+from sqlalchemy.orm import Session
 from wsgi import app
 from service.models import Product, DataValidationError, db
 from .factories import ProductFactory
@@ -84,6 +86,20 @@ class TestProductModel(TestCase):
         duplicate.sku = product.sku  # same SKU triggers unique constraint violation
         self.assertRaises(DataValidationError, duplicate.create)
 
+    def test_update_raises_on_db_error(self):
+        """It should raise DataValidationError when DB fails on update"""
+        product = ProductFactory()
+        product.create()
+        with patch.object(Session, "commit", side_effect=Exception("DB error")):
+            self.assertRaises(DataValidationError, product.update)
+
+    def test_delete_raises_on_db_error(self):
+        """It should raise DataValidationError when DB fails on delete"""
+        product = ProductFactory()
+        product.create()
+        with patch.object(Session, "commit", side_effect=Exception("DB error")):
+            self.assertRaises(DataValidationError, product.delete)
+
     def test_deserialize_raises_on_missing_key(self):
         """It should raise DataValidationError on missing field"""
         product = Product()
@@ -94,7 +110,9 @@ class TestProductModel(TestCase):
         product = Product()
 
         # An object whose __getitem__ raises AttributeError
-        class BadData:
+        class BadData:  # pylint: disable=too-few-public-methods
+            """Fake data object that raises AttributeError on key access"""
+
             def __getitem__(self, key):
                 raise AttributeError("Bad Attribute")
 

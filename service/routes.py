@@ -15,15 +15,15 @@
 ######################################################################
 
 """
-YourResourceModel Service
+Product Service
 
 This service implements a REST API that allows you to Create, Read, Update
-and Delete YourResourceModel
+and Delete Product
 """
 
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
-from service.models import YourResourceModel
+from service.models import Product
 from service.common import status  # HTTP Status Codes
 
 
@@ -43,4 +43,50 @@ def index():
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
 
-# Todo: Place your REST API code here ...
+
+@app.route("/products", methods=["POST"])
+def create_product():
+    """Creates a new Product"""
+    app.logger.info("Request to create a Product")
+    check_content_type("application/json")
+    product = Product()
+    product.deserialize(request.get_json())
+    product.create()
+    location_url = url_for("get_product", sku=product.sku, _external=True)
+    return (
+        jsonify(product.serialize()),
+        status.HTTP_201_CREATED,
+        {"Location": location_url},
+    )
+
+
+@app.route("/products/<int:sku>", methods=["GET"])
+def get_product(sku):
+    """Retrieves a single Product"""
+    app.logger.info("Request for product with sku: %s", sku)
+    product = Product.find(sku)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with sku '{sku}' was not found.")
+    return jsonify(product.serialize()), status.HTTP_200_OK
+
+
+######################################################################
+#  U T I L I T Y   F U N C T I O N S
+######################################################################
+
+
+def check_content_type(content_type):
+    """Checks that the media type is correct"""
+    if "Content-Type" not in request.headers:
+        app.logger.error("No Content-Type specified.")
+        abort(
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            f"Content-Type must be {content_type}",
+        )
+    if request.headers["Content-Type"] == content_type:
+        return
+    app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
+    abort(
+        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+        f"Content-Type must be {content_type}",
+    )

@@ -2,9 +2,11 @@
 Test Factory to make fake objects for testing
 """
 
-import factory
-from decimal import Decimal
 import random
+from decimal import Decimal
+
+import factory
+
 from service.models import Product
 
 
@@ -23,5 +25,3 @@ class ProductFactory(factory.Factory):
         lambda _: Decimal(str(round(random.uniform(0.01, 999999.99), 2)))
     )
     image = factory.Faker("image_url")
-
-    # Todo: Add your other attributes here...
