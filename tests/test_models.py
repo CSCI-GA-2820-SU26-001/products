@@ -15,28 +15,31 @@
 ######################################################################
 
 """
-Test cases for Pet Model
+Test cases for Product Model
 """
 
 # pylint: disable=duplicate-code
 import os
 import logging
 from unittest import TestCase
+
+# from unittest.mock import patch
+# from sqlalchemy.orm import Session
 from wsgi import app
-from service.models import YourResourceModel, DataValidationError, db
-from .factories import YourResourceModelFactory
+from service.models import Product, DataValidationError, db
+from .factories import ProductFactory
 
 DATABASE_URI = os.getenv(
-    "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
+    "DATABASE_URI", "postgresql+psycopg://postgres:pgs3cr3t@postgres:5432/postgres"
 )
 
 
 ######################################################################
-#  YourResourceModel   M O D E L   T E S T   C A S E S
+#  Product   M O D E L   T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
-class TestYourResourceModel(TestCase):
-    """Test Cases for YourResourceModel Model"""
+class TestProductModel(TestCase):
+    """Test Cases for Product Model"""
 
     @classmethod
     def setUpClass(cls):
@@ -54,7 +57,7 @@ class TestYourResourceModel(TestCase):
 
     def setUp(self):
         """This runs before each test"""
-        db.session.query(YourResourceModel).delete()  # clean up the last tests
+        db.session.query(Product).delete()  # clean up the last tests
         db.session.commit()
 
     def tearDown(self):
@@ -65,15 +68,90 @@ class TestYourResourceModel(TestCase):
     #  T E S T   C A S E S
     ######################################################################
 
-    def test_example_replace_this(self):
-        """It should create a YourResourceModel"""
-        # Todo: Remove this test case example
-        resource = YourResourceModelFactory()
-        resource.create()
-        self.assertIsNotNone(resource.id)
-        found = YourResourceModel.all()
-        self.assertEqual(len(found), 1)
-        data = YourResourceModel.find(resource.id)
-        self.assertEqual(data.name, resource.name)
+    def test_repr(self):
+        """It should return a human-readable representation of a Product instance"""
+        product = ProductFactory()
+        self.assertIn("Product", repr(product))
 
-    # Todo: Add your test cases here...
+    def test_create_product(self):
+        """It should create a Product"""
+        product = ProductFactory()
+        product.create()
+        self.assertIsNotNone(product.sku)
+
+    def test_create_raises_on_db_error(self):
+        """It should raise DataValidationError when DB fails on create new product"""
+        product = ProductFactory()
+        product.create()
+        duplicate = ProductFactory()
+        duplicate.sku = product.sku  # same SKU triggers unique constraint violation
+        self.assertRaises(DataValidationError, duplicate.create)
+
+    # def test_update_raises_on_db_error(self):
+    #     """It should raise DataValidationError when DB fails on update"""
+    #     product = ProductFactory()
+    #     product.create()
+    #     with patch.object(Session, "commit", side_effect=Exception("DB error")):
+    #         self.assertRaises(DataValidationError, product.update)
+
+    # def test_delete_raises_on_db_error(self):
+    #     """It should raise DataValidationError when DB fails on delete"""
+    #     product = ProductFactory()
+    #     product.create()
+    #     with patch.object(Session, "commit", side_effect=Exception("DB error")):
+    #         self.assertRaises(DataValidationError, product.delete)
+
+    def test_deserialize_raises_on_missing_key(self):
+        """It should raise DataValidationError on missing field"""
+        product = Product()
+        self.assertRaises(DataValidationError, product.deserialize, {"sku": 1})
+
+    def test_deserialize_raises_on_attribute_error(self):
+        """It should raise DataValidationError on Attribute Error"""
+        product = Product()
+
+        # An object whose __getitem__ raises AttributeError
+        class BadData:  # pylint: disable=too-few-public-methods
+            """Fake data object that raises AttributeError on key access"""
+
+            def __getitem__(self, key):
+                raise AttributeError("Bad Attribute")
+
+        self.assertRaises(DataValidationError, product.deserialize, BadData())
+
+    def test_deserialize_raises_on_type_error(self):
+        """It should raise DataValidationError on Type Error"""
+        product = Product()
+        self.assertRaises(DataValidationError, product.deserialize, None)
+
+    def test_read_a_product(self):
+        """It should read a Product from the database"""
+        product = ProductFactory()
+        product.create()
+        found = Product.find(product.sku)
+        self.assertIsNotNone(found)
+        self.assertEqual(found.sku, product.sku)
+        self.assertEqual(found.name, product.name)
+
+    def test_serialize_a_product(self):
+        """It should serialize a Product into a dictionary"""
+        product = ProductFactory()
+        product.create()
+        data = product.serialize()
+        self.assertIn("sku", data)
+        self.assertIn("name", data)
+        self.assertIn("description", data)
+        self.assertIn("price", data)
+        self.assertIn("image", data)
+
+    def test_deserialize_a_product(self):
+        """It should deserialize a Product from a dictionary"""
+        product = ProductFactory()
+        data = product.serialize()
+        new_product = Product()
+        new_product.deserialize(data)
+        self.assertEqual(new_product.sku, product.sku)
+        self.assertEqual(new_product.name, product.name)
+        self.assertEqual(new_product.description, product.description)
+        self.assertEqual(float(new_product.price), float(product.price))
+        self.assertEqual(new_product.image, product.image)

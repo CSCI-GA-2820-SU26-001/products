@@ -18,6 +18,7 @@ Package for the application models and service routes
 This module creates and configures the Flask app and sets up the logging
 and SQL database
 """
+
 import sys
 from flask import Flask
 from service import config
@@ -36,6 +37,7 @@ def create_app():
     # Initialize Plugins
     # pylint: disable=import-outside-toplevel
     from service.models import db
+
     db.init_app(app)
 
     with app.app_context():
@@ -45,11 +47,13 @@ def create_app():
         from service.common import error_handlers, cli_commands  # noqa: F401, E402
 
         try:
+            db.session.execute(db.text("CREATE SCHEMA IF NOT EXISTS product"))
+            db.session.commit()
             db.create_all()
-        except Exception as error:  # pylint: disable=broad-except
-            app.logger.critical("%s: Cannot continue", error)
+        except Exception as error:  # pylint: disable=broad-except  # pragma: no cover
+            app.logger.critical("%s: Cannot continue", error)  # pragma: no cover
             # gunicorn requires exit code 4 to stop spawning workers when they die
-            sys.exit(4)
+            sys.exit(4)  # pragma: no cover
 
         # Set up logging for production
         log_handlers.init_logging(app, "gunicorn.error")

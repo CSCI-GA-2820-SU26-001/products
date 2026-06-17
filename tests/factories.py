@@ -2,19 +2,26 @@
 Test Factory to make fake objects for testing
 """
 
+import random
+from decimal import Decimal
+
 import factory
-from service.models import YourResourceModel
+
+from service.models import Product
 
 
-class YourResourceModelFactory(factory.Factory):
-    """Creates fake pets that you don't have to feed"""
+class ProductFactory(factory.Factory):
+    """Creates fake products that you don't have to feed"""
 
     class Meta:  # pylint: disable=too-few-public-methods
         """Maps factory to data model"""
 
-        model = YourResourceModel
+        model = Product
 
-    id = factory.Sequence(lambda n: n)
+    sku = factory.Sequence(lambda n: n)
     name = factory.Faker("first_name")
-
-    # Todo: Add your other attributes here...
+    description = factory.Faker("sentence")
+    price = factory.LazyAttribute(
+        lambda _: Decimal(str(round(random.uniform(0.01, 999999.99), 2)))
+    )
+    image = factory.Faker("image_url")
