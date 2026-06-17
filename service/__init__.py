@@ -47,6 +47,8 @@ def create_app():
         from service.common import error_handlers, cli_commands  # noqa: F401, E402
 
         try:
+            db.session.execute(db.text("CREATE SCHEMA IF NOT EXISTS product"))
+            db.session.commit()
             db.create_all()
         except Exception as error:  # pylint: disable=broad-except  # pragma: no cover
             app.logger.critical("%s: Cannot continue", error)  # pragma: no cover
