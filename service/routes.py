@@ -46,7 +46,18 @@ def index():
 
 @app.route("/products", methods=["POST"])
 def create_product():
-    """Creates a new Product"""
+    """Creates a new Product
+
+    Accept JSON format to create a new product. All fields are required.
+    Sample :
+        {
+            "sku": 1001,
+            "name": "Test Product",
+            "description": "A test product",
+            "price": 19.99,
+            "image": "http://example.com/image.jpg"
+        }
+    """
     app.logger.info("Request to create a Product")
     check_content_type("application/json")
     product = Product()
@@ -60,6 +71,9 @@ def create_product():
     )
 
 
+######################################################################
+# READ A PRODUCT
+######################################################################
 @app.route("/products/<int:sku>", methods=["GET"])
 def get_product(sku):
     """Retrieves a single Product"""
