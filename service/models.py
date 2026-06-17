@@ -48,27 +48,6 @@ class Product(db.Model):
             logger.error("Error creating record: %s", self)
             raise DataValidationError(e) from e
 
-    def update(self):
-        """Updates a Product in the database"""
-        logger.info("Saving %s", self.name)
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            logger.error("Error updating record: %s", self)
-            raise DataValidationError(e) from e
-
-    def delete(self):
-        """Removes a Product from the database"""
-        logger.info("Deleting %s", self.name)
-        try:
-            db.session.delete(self)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            logger.error("Error deleting record: %s", self)
-            raise DataValidationError(e) from e
-
     def serialize(self):
         """Serializes a Product into a dictionary"""
         return {

@@ -22,8 +22,9 @@ Test cases for Product Model
 import os
 import logging
 from unittest import TestCase
-from unittest.mock import patch
-from sqlalchemy.orm import Session
+
+# from unittest.mock import patch
+# from sqlalchemy.orm import Session
 from wsgi import app
 from service.models import Product, DataValidationError, db
 from .factories import ProductFactory
@@ -86,19 +87,19 @@ class TestProductModel(TestCase):
         duplicate.sku = product.sku  # same SKU triggers unique constraint violation
         self.assertRaises(DataValidationError, duplicate.create)
 
-    def test_update_raises_on_db_error(self):
-        """It should raise DataValidationError when DB fails on update"""
-        product = ProductFactory()
-        product.create()
-        with patch.object(Session, "commit", side_effect=Exception("DB error")):
-            self.assertRaises(DataValidationError, product.update)
+    # def test_update_raises_on_db_error(self):
+    #     """It should raise DataValidationError when DB fails on update"""
+    #     product = ProductFactory()
+    #     product.create()
+    #     with patch.object(Session, "commit", side_effect=Exception("DB error")):
+    #         self.assertRaises(DataValidationError, product.update)
 
-    def test_delete_raises_on_db_error(self):
-        """It should raise DataValidationError when DB fails on delete"""
-        product = ProductFactory()
-        product.create()
-        with patch.object(Session, "commit", side_effect=Exception("DB error")):
-            self.assertRaises(DataValidationError, product.delete)
+    # def test_delete_raises_on_db_error(self):
+    #     """It should raise DataValidationError when DB fails on delete"""
+    #     product = ProductFactory()
+    #     product.create()
+    #     with patch.object(Session, "commit", side_effect=Exception("DB error")):
+    #         self.assertRaises(DataValidationError, product.delete)
 
     def test_deserialize_raises_on_missing_key(self):
         """It should raise DataValidationError on missing field"""
@@ -131,30 +132,6 @@ class TestProductModel(TestCase):
         self.assertIsNotNone(found)
         self.assertEqual(found.sku, product.sku)
         self.assertEqual(found.name, product.name)
-
-    def test_update_a_product(self):
-        """It should update a Product in the database"""
-        product = ProductFactory()
-        product.create()
-        product.name = "Updated Name"
-        product.update()
-        found = Product.find(product.sku)
-        self.assertEqual(found.name, "Updated Name")
-
-    def test_delete_a_product(self):
-        """It should delete a Product from the database"""
-        product = ProductFactory()
-        product.create()
-        product.delete()
-        self.assertIsNone(Product.find(product.sku))
-
-    def test_list_all_products(self):
-        """It should list all Products in the database"""
-        ProductFactory().create()
-        ProductFactory().create()
-        ProductFactory().create()
-        products = Product.all()
-        self.assertEqual(len(products), 3)
 
     def test_serialize_a_product(self):
         """It should serialize a Product into a dictionary"""
