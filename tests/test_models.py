@@ -101,6 +101,18 @@ class TestProductModel(TestCase):
     #     with patch.object(Session, "commit", side_effect=Exception("DB error")):
     #         self.assertRaises(DataValidationError, product.delete)
 
+    def test_list_all_products(self):
+        """It should List all Products in the database"""
+        products = Product.all()
+        self.assertEqual(products, [])
+        # Create 5 Products
+        for _ in range(5):
+            product = ProductFactory()
+            product.create()
+        # See if we get back 5 products
+        products = Product.all()
+        self.assertEqual(len(products), 5)
+
     def test_deserialize_raises_on_missing_key(self):
         """It should raise DataValidationError on missing field"""
         product = Product()
