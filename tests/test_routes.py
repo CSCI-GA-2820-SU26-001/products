@@ -27,10 +27,12 @@ from unittest.mock import patch
 from wsgi import app
 from service.common import status
 from service.models import db, Product
+from tests.factories import ProductFactory
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:pgs3cr3t@postgres:5432/postgres"
 )
+BASE_URL = "/products"
 
 
 ######################################################################
@@ -64,6 +66,25 @@ class TestProductService(TestCase):
     def tearDown(self):
         """This runs after each test"""
         db.session.remove()
+
+    ############################################################
+    # Utility function to bulk create products
+    ############################################################
+    def _create_products(self, count: int = 1) -> list:
+        """Factory method to create products in bulk"""
+        products = []
+        for _ in range(count):
+            test_product = ProductFactory()
+            response = self.client.post(BASE_URL, json=test_product.serialize())
+            self.assertEqual(
+                response.status_code,
+                status.HTTP_201_CREATED,
+                "Could not create test product",
+            )
+            new_product = response.get_json()
+            test_product.sku = new_product["sku"]
+            products.append(test_product)
+        return products
 
     ######################################################################
     #  P L A C E   T E S T   C A S E S   H E R E
@@ -134,6 +155,17 @@ class TestProductService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["sku"], 42)
+
+    # ----------------------------------------------------------
+    # TEST LIST
+    # ----------------------------------------------------------
+    def test_get_product_list(self):
+        """It should Get a list of Products"""
+        self._create_products(5)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)
 
     def test_not_found(self):
         """It should return 404 for non-existent resources"""

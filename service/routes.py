@@ -71,6 +71,22 @@ def get_product(sku):
 
 
 ######################################################################
+# LIST ALL PRODUCTS
+######################################################################
+@app.route("/products", methods=["GET"])
+def list_products():
+    """Returns all of the Products"""
+    app.logger.info("Request for product list")
+
+    # Return all of the Products
+    products = Product.all()
+
+    results = [product.serialize() for product in products]
+    app.logger.info("Returning %d product", len(results))
+    return jsonify(results), status.HTTP_200_OK
+
+
+######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 
