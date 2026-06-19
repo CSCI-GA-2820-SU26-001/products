@@ -83,7 +83,7 @@ def list_products():
 
     results = [product.serialize() for product in products]
     app.logger.info("Returning %d product", len(results))
-    return results, status.HTTP_200_OK
+    return jsonify(results), status.HTTP_200_OK
 
 
 ######################################################################
