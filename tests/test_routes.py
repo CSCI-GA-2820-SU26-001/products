@@ -96,7 +96,10 @@ class TestProductService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
     def test_create_product(self):
-        """It should create a new product"""
+        """
+        Test the creation of new product in route /products
+        It should create a new product
+        """
         new_product = {
             "sku": 1,
             "name": "Test Product",
