@@ -19,6 +19,7 @@ TestProduct API Service Test Suite
 """
 
 # pylint: disable=duplicate-code
+from itertools import product
 import os
 import logging
 from unittest import TestCase
@@ -145,7 +146,9 @@ class TestProductService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_get_product(self):
-        """It should retrieve an existing product"""
+        """
+        It should retrieve an existing product in route /productsGET /products/{sku}
+        """
         new_product = {
             "sku": 42,
             "name": "Get Test Product",
