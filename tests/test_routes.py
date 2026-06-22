@@ -19,7 +19,7 @@ TestProduct API Service Test Suite
 """
 
 # pylint: disable=duplicate-code
-from itertools import product
+# from itertools import product
 import os
 import logging
 from unittest import TestCase
