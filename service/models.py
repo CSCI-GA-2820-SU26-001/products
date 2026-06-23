@@ -99,3 +99,15 @@ class Product(db.Model):
         """Finds a Product by its SKU"""
         logger.info("Processing lookup for sku %s ...", by_sku)
         return cls.query.session.get(cls, by_sku)
+
+    def update(self) -> None:
+        """
+        Updates a Product to the database
+        """
+        logger.info("Saving %s with %s sku", self.name, self.sku)
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error("Error updating record: %s", self)
+            raise DataValidationError(e) from e

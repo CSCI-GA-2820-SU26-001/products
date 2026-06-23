@@ -23,8 +23,8 @@ and Delete Product
 
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
-from service.models import Product
-from service.common import status  # HTTP Status Codes
+from service.common import status
+from service.models import Product  # HTTP Status Codes
 
 
 ######################################################################
@@ -99,6 +99,36 @@ def list_products():
     app.logger.info("Returning %d product", len(results))
     return jsonify(results), status.HTTP_200_OK
 
+
+######################################################################
+# UPDATE AN EXISTING PRODUCT
+######################################################################
+@app.route("/products/<int:by_sku>", methods=["PUT"])
+def update_products(by_sku):
+    """
+    Update a Product
+
+    This endpoint will update a Product based the body that is posted
+    """
+    app.logger.info("Request to Update a Product with sku [%s]", by_sku)
+    check_content_type("application/json")
+
+    # Attempt to find the Product and abort if not found
+    product = Product.find(by_sku)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id '{by_sku}' was not found.")
+
+    # Update the Product with the new data
+    data = request.get_json()
+    app.logger.info("Processing: %s", data)
+
+    product.deserialize(data)
+
+    # Save the updates to the database
+    product.update()
+
+    app.logger.info("Product with SKU: %d updated.", product.sku)
+    return product.serialize(), status.HTTP_200_OK
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
