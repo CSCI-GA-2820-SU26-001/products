@@ -19,6 +19,7 @@ TestProduct API Service Test Suite
 """
 
 # pylint: disable=duplicate-code
+# from itertools import product
 import os
 import logging
 from unittest import TestCase
@@ -145,7 +146,9 @@ class TestProductService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_get_product(self):
-        """It should retrieve an existing product"""
+        """
+        It should retrieve an existing product in route /productsGET /products/{sku}
+        """
         new_product = {
             "sku": 42,
             "name": "Get Test Product",
@@ -174,6 +177,13 @@ class TestProductService(TestCase):
         """It should return 404 for non-existent resources"""
         response = self.client.get("/products/999")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_product_not_found_zero_sku(self):
+        """It should return 404 when retrieving a product with SKU that does not exist"""
+        response = self.client.get("/products/0")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        data = response.get_json()
+        self.assertIn("0", str(data))
 
     def test_unsupported_media_type_wrong_content_type(self):
         """It should reject requests with wrong Content-Type header"""

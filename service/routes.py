@@ -76,7 +76,12 @@ def create_product():
 ######################################################################
 @app.route("/products/<int:sku>", methods=["GET"])
 def get_product(sku):
-    """Retrieves a single Product"""
+    """Retrieves a single Product
+    Accept parameters: SKU<integer>
+    Returns: product object in JSON format
+            200 OK on success
+            404 Not Found if product does not exist
+    """
     app.logger.info("Request for product with sku: %s", sku)
     product = Product.find(sku)
     if not product:
