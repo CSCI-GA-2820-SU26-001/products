@@ -106,6 +106,28 @@ def list_products():
 
 
 ######################################################################
+# DELETE A PRODUCT
+######################################################################
+@app.route("/products/<int:by_sku>", methods=["DELETE"])
+def delete_products(by_sku):
+    """
+    Delete a Product
+
+    This endpoint will delete a Product based on the sku specified in the path
+    """
+    app.logger.info("Request to Delete a product with siu [%s]", by_sku)
+
+    # Delete the Product if it exists
+    product = Product.find(by_sku)
+    if product:
+        app.logger.info("Product with sku: %d found.", product.sku)
+        product.delete()
+
+    app.logger.info("Product with sku: %d delete complete.", by_sku)
+    return {}, status.HTTP_204_NO_CONTENT
+
+
+######################################################################
 # UPDATE AN EXISTING PRODUCT
 ######################################################################
 @app.route("/products/<int:by_sku>", methods=["PUT"])
