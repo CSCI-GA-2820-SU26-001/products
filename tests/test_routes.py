@@ -173,6 +173,89 @@ class TestProductService(TestCase):
         data = response.get_json()
         self.assertEqual(len(data), 5)
 
+    def test_get_empty_product_list(self):
+        """It should Get an empty list of Products when there are none"""
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 0)
+
+    # ----------------------------------------------------------
+    # TEST UPDATE
+    # ----------------------------------------------------------
+    def test_update_product_success(self):
+        """It should Update an existing Product"""
+        # create a product to update
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # update the product
+        new_product = response.get_json()
+        logging.debug(new_product)
+        new_product["name"] = "Tara"
+        response = self.client.put(f"{BASE_URL}/{new_product['sku']}", json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_product = response.get_json()
+        self.assertEqual(updated_product["name"], "Tara")
+
+    def test_update_product_does_not_exist(self):
+        """It should not Update a non-existing Product"""
+        # create a product to update
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # update a non-existing product (with different sku)
+        new_product = response.get_json()
+        logging.debug(new_product)
+        new_product["sku"] = new_product["sku"] - 1
+        response = self.client.put(f"{BASE_URL}/{new_product['sku']}", json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_product_with_missing_info(self):
+        """It should not Update a Product with missing field in payload"""
+        # create a product to update
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # update the created product without a required field (name)
+        new_product = response.get_json()
+        logging.debug(new_product)
+        new_product.pop("name")
+        response = self.client.put(f"{BASE_URL}/{new_product['sku']}", json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_product_with_missing_sku(self):
+        """It should not Update a Product without sku"""
+        # create a product to update
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # update the created product without an sku
+        new_product = response.get_json()
+        logging.debug(new_product)
+        temp = new_product["sku"]
+        new_product.pop("sku")
+        response = self.client.put(f"{BASE_URL}/{temp}", json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_product_with_incorrect_info(self):
+        """It should not Update a Product with incorrect field in payload"""
+        # create a product to update
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # update the created product with a price more than 10 digits
+        new_product = response.get_json()
+        logging.debug(new_product)
+        new_product["price"] = 11111111111111111111.123
+        response = self.client.put(f"{BASE_URL}/{new_product['sku']}", json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_not_found(self):
         """It should return 404 for non-existent resources"""
         response = self.client.get("/products/999")
