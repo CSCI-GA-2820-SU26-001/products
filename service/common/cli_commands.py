@@ -16,6 +16,7 @@
 """
 Flask CLI Command Extensions
 """
+
 from flask import current_app as app  # Import Flask application
 from service.models import db
 
@@ -32,5 +33,7 @@ def db_create():
     production. ;-)
     """
     db.drop_all()
+    db.session.execute(db.text("CREATE SCHEMA IF NOT EXISTS product"))
+    db.session.commit()
     db.create_all()
     db.session.commit()
