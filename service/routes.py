@@ -34,7 +34,11 @@ from service.models import Product  # HTTP Status Codes
 def index():
     """Root URL response"""
     return (
-        "Reminder: return some useful information in json format about the service here",
+        jsonify(
+            name="Product REST API Service",
+            version="1.0",
+            paths=url_for("list_products", _external=True),
+        ),
         status.HTTP_200_OK,
     )
 
@@ -156,6 +160,7 @@ def update_products(by_sku):
 
     app.logger.info("Product with SKU: %d updated.", product.sku)
     return product.serialize(), status.HTTP_200_OK
+
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
