@@ -1,4 +1,4 @@
-# DevOps Products 
+# Product REST API Service
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
@@ -30,6 +30,20 @@ Access the local service: `http://localhost:8080/`
 
 ## Endpoint Info
 
+### Root
+
+```
+GET /
+
+200 OK
+
+{
+  "name": "Product REST API Service",
+  "paths": "http://localhost:8080/products",
+  "version": "1.0"
+}
+
+```
 
 ### Create a Product
 
