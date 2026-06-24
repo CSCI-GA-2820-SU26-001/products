@@ -48,6 +48,19 @@ class Product(db.Model):
             logger.error("Error creating record: %s", self)
             raise DataValidationError(e) from e
 
+    def delete(self) -> None:
+        """
+        Removes a Product from the database
+        """
+        logger.info("Deleting %s", self.name)
+        try:
+            db.session.delete(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error("Error deleting record: %s", self)
+            raise DataValidationError(e) from e
+
     def serialize(self):
         """Serializes a Product into a dictionary"""
         return {
@@ -105,6 +118,9 @@ class Product(db.Model):
         Updates a Product to the database
         """
         logger.info("Saving %s with %s sku", self.name, self.sku)
+        if not self.sku:
+            raise DataValidationError("Update called with empty sku field")
+
         try:
             db.session.commit()
         except Exception as e:

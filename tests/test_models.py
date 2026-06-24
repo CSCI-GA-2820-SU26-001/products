@@ -22,6 +22,7 @@ Test cases for Product Model
 import os
 import logging
 from unittest import TestCase
+from unittest.mock import patch
 
 # from unittest.mock import patch
 # from sqlalchemy.orm import Session
@@ -101,6 +102,43 @@ class TestProductModel(TestCase):
     #     with patch.object(Session, "commit", side_effect=Exception("DB error")):
     #         self.assertRaises(DataValidationError, product.delete)
 
+    def test_update_a_product(self):
+        """It should Update a Product"""
+        product = ProductFactory()
+        logging.debug(product)
+        product.sku = None
+        product.create()
+        logging.debug(product)
+        self.assertIsNotNone(product.sku)
+        # Change it an save it
+        product.description = "blah blah"
+        original_sku = product.sku
+        product.update()
+        self.assertEqual(product.sku, original_sku)
+        self.assertEqual(product.description, "blah blah")
+        # Fetch it back and make sure the sku hasn't changed
+        # but the data did change
+        products = Product.all()
+        self.assertEqual(len(products), 1)
+        self.assertEqual(products[0].sku, original_sku)
+        self.assertEqual(products[0].description, "blah blah")
+
+    def test_update_no_sku(self):
+        """It should not Update a Product with no sku"""
+        product = ProductFactory()
+        logging.debug(product)
+        product.sku = None
+        self.assertRaises(DataValidationError, product.update)
+
+    def test_delete_a_product(self):
+        """It should Delete a Product"""
+        product = ProductFactory()
+        product.create()
+        self.assertEqual(len(Product.all()), 1)
+        # delete the product and make sure it isn't in the database
+        product.delete()
+        self.assertEqual(len(Product.all()), 0)
+
     def test_list_all_products(self):
         """It should List all Products in the database"""
         products = Product.all()
@@ -167,3 +205,31 @@ class TestProductModel(TestCase):
         self.assertEqual(new_product.description, product.description)
         self.assertEqual(float(new_product.price), float(product.price))
         self.assertEqual(new_product.image, product.image)
+
+
+######################################################################
+#  T E S T   E X C E P T I O N   H A N D L E R S
+######################################################################
+class TestExceptionHandlers(TestCase):
+    """Product Model Exception Handlers"""
+
+    @patch("service.models.db.session.commit")
+    def test_create_exception(self, exception_mock):
+        """It should catch a create exception"""
+        exception_mock.side_effect = Exception()
+        product = ProductFactory()
+        self.assertRaises(DataValidationError, product.create)
+
+    @patch("service.models.db.session.commit")
+    def test_update_exception(self, exception_mock):
+        """It should catch a update exception"""
+        exception_mock.side_effect = Exception()
+        product = ProductFactory()
+        self.assertRaises(DataValidationError, product.update)
+
+    @patch("service.models.db.session.commit")
+    def test_delete_exception(self, exception_mock):
+        """It should catch a delete exception"""
+        exception_mock.side_effect = Exception()
+        product = ProductFactory()
+        self.assertRaises(DataValidationError, product.delete)
