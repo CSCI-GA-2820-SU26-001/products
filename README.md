@@ -1,63 +1,158 @@
-# NYU DevOps Project Template
+# DevOps Products 
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
 
-This is a skeleton you can use to start your projects.
-
-**Note:** _Feel free to overwrite this `README.md` file with the one that describes your project._
-
 ## Overview
 
-This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
+A REST API for managing products as part of an ecommerce application. It stores each product along side a series of descriptors for it: a name, description, price, an associated image and a sku code. It can be used to create new products and read, update, list or delete existing ones.
 
-## Automatic Setup
+-------
 
-The best way to use this repo is to start your own repo using it as a git template. To do this just press the green **Use this template** button in GitHub and this will become the source for your repository.
+The Products service utilizes:  
+- Python   
+- Flask  
+- PostgreSQL 
 
-## Manual Setup
+And runs on Docker
 
-You can also clone this repository and then copy and paste the starter code into your project repo folder on your local computer. Be careful not to copy over your own `README.md` file so be selective in what you copy.
 
-There are 4 hidden files that you will need to copy manually if you use the Mac Finder or Windows Explorer to copy files from this folder into your repo folder.
 
-These should be copied using a bash shell as follows:
+## Setup
 
-```bash
-    cp .gitignore  ../<your_repo_folder>/
-    cp .flaskenv ../<your_repo_folder>/
-    cp .gitattributes ../<your_repo_folder>/
+Clone the repo: `git clone https://github.com/CSCI-GA-2820-SU26-001/products`
+
+Open the repo in a container
+
+Run the service: `make run`
+
+Access the local service: `http://localhost:8080/` 
+
+## Endpoint Info
+
+
+### Create a Product
+
+```
+POST /products
+
+Request:
+{
+  "description": "Example Description",
+  "image": "https://dummyimage.com/623x359",
+  "name": "Example Name",
+  "price": 15.25,
+  "sku": 30
+}
+
+201 CREATED
+
+{
+  "description": "Example Description",
+  "image": "https://dummyimage.com/623x359",
+  "name": "Example Name",
+  "price": 15.25,
+  "sku": 30
+}
+
 ```
 
-## Contents
 
-The project contains the following:
+### Display a Product
 
-```text
-.gitignore          - this will ignore vagrant and other metadata files
-.flaskenv           - Environment variables to configure Flask
-.gitattributes      - File to gix Windows CRLF issues
-.devcontainers/     - Folder with support for VSCode Remote Containers
-dot-env-example     - copy to .env to use environment variables
-pyproject.toml      - Poetry list of Python libraries required by your code
+```
+GET /products/<sku>
 
-service/                   - service python package
-├── __init__.py            - package initializer
-├── config.py              - configuration parameters
-├── models.py              - module with business models
-├── routes.py              - module with service routes
-└── common                 - common code package
-    ├── cli_commands.py    - Flask command to recreate all tables
-    ├── error_handlers.py  - HTTP error handling code
-    ├── log_handlers.py    - logging setup code
-    └── status.py          - HTTP status constants
+200 OK
 
-tests/                     - test cases package
-├── __init__.py            - package initializer
-├── factories.py           - Factory for testing with fake objects
-├── test_cli_commands.py   - test suite for the CLI
-├── test_models.py         - test suite for business models
-└── test_routes.py         - test suite for service routes
+{
+  "description": "Example description",
+  "image": "https://dummyimage.com/623x359",
+  "name": "Example Name",
+  "price": 78875.51,
+  "sku": 28
+}
+
+OR
+
+404 NOT FOUND
+
+{
+  "error": "Not Found",
+  "message": "404 Not Found: Product with sku '999' was not found.",
+  "status": 404
+}
+
+```
+
+### Display all Products
+
+```
+GET /products
+
+200 OK
+
+[
+  {
+    "description": "Example description",
+    "image": "https://dummyimage.com/623x359",
+    "name": "Example Name",
+    "price": 78875.51,
+    "sku": 28
+  },
+  {
+    "description": "Example description two",
+    "image": "https://dummyimage2.com/623x359",
+    "name": "Example Name Two",
+    "price": 68875.51,
+    "sku": 29
+  }
+]
+```
+
+### Delete a Product
+
+```
+DELETE /products/<sku>
+
+204 NO CONTENT
+```
+
+
+### Update a Product
+
+```
+PUT /products/<sku>
+
+Request:
+{
+  "description": "Updated Description",
+  "image": "https://dummyimage.com/623x359",
+  "name": "Updated Name",
+  "price": 7.5,
+  "sku": 30
+}
+
+200 OK
+
+{
+  "description": "Updated Description",
+  "image": "https://dummyimage.com/623x359",
+  "name": "Updated Name",
+  "price": 7.5,
+  "sku": 30
+}
+
+OR
+
+404 NOT FOUND
+
+{
+  "error": "Not Found",
+  "message": "404 Not Found: Product with id '999' was not found.",
+  "status": 404
+}
+
 ```
 
 ## License
