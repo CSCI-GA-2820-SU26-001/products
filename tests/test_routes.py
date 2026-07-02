@@ -27,7 +27,7 @@ from unittest.mock import patch
 
 from wsgi import app
 from service.common import status
-from service.models import db, Product
+from service.models import db, Product, ProductState
 from tests.factories import ProductFactory
 
 DATABASE_URI = os.getenv(
@@ -119,6 +119,7 @@ class TestProductService(TestCase):
         self.assertEqual(data["description"], new_product["description"])
         self.assertEqual(float(data["price"]), new_product["price"])
         self.assertEqual(data["image"], new_product["image"])
+        self.assertEqual(data["state"], "ACTIVE")
 
     def test_bad_request_missing_field(self):
         """It should not create a product with missing fields"""
@@ -163,6 +164,8 @@ class TestProductService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["sku"], 42)
+        self.assertIn("state", data)
+        self.assertEqual(data["state"], "ACTIVE")
 
     # ----------------------------------------------------------
     # TEST LIST
@@ -276,6 +279,76 @@ class TestProductService(TestCase):
         new_product["price"] = 11111111111111111111.123
         response = self.client.put(f"{BASE_URL}/{new_product['sku']}", json=new_product)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # ----------------------------------------------------------
+    # TEST STATE FIELD
+    # ----------------------------------------------------------
+    def test_create_product_with_valid_state(self):
+        """It should create a Product with a specified valid state"""
+        new_product = {
+            "sku": 100,
+            "name": "Stateful Product",
+            "description": "A product with an explicit state.",
+            "price": 9.99,
+            "image": "http://example.com/image.jpg",
+            "state": "DISCONTINUED",
+        }
+        response = self.client.post(BASE_URL, json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.get_json()
+        self.assertEqual(data["state"], "DISCONTINUED")
+
+    def test_create_product_with_invalid_state(self):
+        """It should not create a Product with an invalid state value"""
+        new_product = {
+            "sku": 101,
+            "name": "Bad State Product",
+            "description": "A product with an invalid state.",
+            "price": 9.99,
+            "image": "http://example.com/image.jpg",
+            "state": "NOT_A_REAL_STATE",
+        }
+        response = self.client.post(BASE_URL, json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("message", data)
+        self.assertIn("state", data["message"].lower())
+
+    def test_update_product_with_valid_state(self):
+        """It should Update an existing Product with a new valid state"""
+        test_product = self._create_products(1)[0]
+        new_product = test_product.serialize()
+        new_product["state"] = "INACTIVE"
+        response = self.client.put(
+            f"{BASE_URL}/{new_product['sku']}", json=new_product
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_product = response.get_json()
+        self.assertEqual(updated_product["state"], "INACTIVE")
+
+    def test_update_product_with_invalid_state(self):
+        """It should not Update a Product with an invalid state value"""
+        test_product = self._create_products(1)[0]
+        new_product = test_product.serialize()
+        new_product["state"] = "NOT_A_REAL_STATE"
+        response = self.client.put(
+            f"{BASE_URL}/{new_product['sku']}", json=new_product
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_product_without_state_defaults_to_active(self):
+        """It should default a Product's state to ACTIVE when not provided"""
+        new_product = {
+            "sku": 102,
+            "name": "No State Product",
+            "description": "A product without a state field.",
+            "price": 9.99,
+            "image": "http://example.com/image.jpg",
+        }
+        response = self.client.post(BASE_URL, json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.get_json()
+        self.assertEqual(data["state"], ProductState.ACTIVE.name)
 
     def test_not_found(self):
         """It should return 404 for non-existent resources"""

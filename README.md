@@ -56,7 +56,8 @@ Request:
   "image": "https://dummyimage.com/623x359",
   "name": "Example Name",
   "price": 15.25,
-  "sku": 30
+  "sku": 30,
+  "state": "ACTIVE"
 }
 
 201 CREATED
@@ -66,10 +67,14 @@ Request:
   "image": "https://dummyimage.com/623x359",
   "name": "Example Name",
   "price": 15.25,
-  "sku": 30
+  "sku": 30,
+  "state": "ACTIVE"
 }
 
 ```
+
+The `state` field is optional on create and defaults to `"ACTIVE"` if omitted.
+Valid values are `"ACTIVE"`, `"INACTIVE"`, and `"DISCONTINUED"`.
 
 
 ### Display a Product
@@ -84,7 +89,8 @@ GET /products/<sku>
   "image": "https://dummyimage.com/623x359",
   "name": "Example Name",
   "price": 78875.51,
-  "sku": 28
+  "sku": 28,
+  "state": "ACTIVE"
 }
 
 OR
@@ -112,14 +118,16 @@ GET /products
     "image": "https://dummyimage.com/623x359",
     "name": "Example Name",
     "price": 78875.51,
-    "sku": 28
+    "sku": 28,
+    "state": "ACTIVE"
   },
   {
     "description": "Example description two",
     "image": "https://dummyimage2.com/623x359",
     "name": "Example Name Two",
     "price": 68875.51,
-    "sku": 29
+    "sku": 29,
+    "state": "INACTIVE"
   }
 ]
 ```
@@ -144,7 +152,8 @@ Request:
   "image": "https://dummyimage.com/623x359",
   "name": "Updated Name",
   "price": 7.5,
-  "sku": 30
+  "sku": 30,
+  "state": "INACTIVE"
 }
 
 200 OK
@@ -154,7 +163,8 @@ Request:
   "image": "https://dummyimage.com/623x359",
   "name": "Updated Name",
   "price": 7.5,
-  "sku": 30
+  "sku": 30,
+  "state": "INACTIVE"
 }
 
 OR

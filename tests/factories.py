@@ -7,7 +7,7 @@ from decimal import Decimal
 
 import factory
 
-from service.models import Product
+from service.models import Product, ProductState
 
 
 class ProductFactory(factory.Factory):
@@ -25,3 +25,6 @@ class ProductFactory(factory.Factory):
         lambda _: Decimal(str(round(random.uniform(0.01, 999999.99), 2)))
     )
     image = factory.Faker("image_url")
+    state = factory.Iterator(
+        [ProductState.ACTIVE, ProductState.INACTIVE, ProductState.DISCONTINUED]
+    )

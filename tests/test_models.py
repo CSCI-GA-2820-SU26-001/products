@@ -27,7 +27,7 @@ from unittest.mock import patch
 # from unittest.mock import patch
 # from sqlalchemy.orm import Session
 from wsgi import app
-from service.models import Product, DataValidationError, db
+from service.models import Product, ProductState, DataValidationError, db
 from .factories import ProductFactory
 
 DATABASE_URI = os.getenv(
@@ -193,6 +193,7 @@ class TestProductModel(TestCase):
         self.assertIn("description", data)
         self.assertIn("price", data)
         self.assertIn("image", data)
+        self.assertIn("state", data)
 
     def test_deserialize_a_product(self):
         """It should deserialize a Product from a dictionary"""
@@ -205,6 +206,68 @@ class TestProductModel(TestCase):
         self.assertEqual(new_product.description, product.description)
         self.assertEqual(float(new_product.price), float(product.price))
         self.assertEqual(new_product.image, product.image)
+        self.assertEqual(new_product.state, product.state)
+
+    ######################################################################
+    #  S T A T E   F I E L D   T E S T   C A S E S
+    ######################################################################
+
+    def test_create_product_defaults_to_active_state(self):
+        """It should default a new Product's state to ACTIVE when saved without one"""
+        # Build the Product directly (bypassing the factory) so the "state"
+        # attribute is never touched, allowing the column default to apply.
+        product = Product(
+            name="Default State Product",
+            description="A product created without an explicit state",
+            price=Decimal("9.99"),
+            image="http://example.com/image.jpg",
+        )
+        product.create()
+        self.assertEqual(product.state, ProductState.ACTIVE)
+
+    def test_deserialize_defaults_state_when_missing(self):
+        """It should default state to ACTIVE when deserializing without a state"""
+        product = ProductFactory()
+        data = product.serialize()
+        del data["state"]
+        new_product = Product()
+        new_product.deserialize(data)
+        self.assertEqual(new_product.state, ProductState.ACTIVE)
+
+    def test_deserialize_accepts_each_valid_state(self):
+        """It should deserialize a Product with any valid state value"""
+        for state in ProductState:
+            product = ProductFactory()
+            data = product.serialize()
+            data["state"] = state.name
+            new_product = Product()
+            new_product.deserialize(data)
+            self.assertEqual(new_product.state, state)
+
+    def test_deserialize_accepts_lowercase_state(self):
+        """It should deserialize a Product with a lowercase state value"""
+        product = ProductFactory()
+        data = product.serialize()
+        data["state"] = "inactive"
+        new_product = Product()
+        new_product.deserialize(data)
+        self.assertEqual(new_product.state, ProductState.INACTIVE)
+
+    def test_deserialize_raises_on_invalid_state(self):
+        """It should raise DataValidationError for an invalid state value"""
+        product = ProductFactory()
+        data = product.serialize()
+        data["state"] = "NOT_A_REAL_STATE"
+        new_product = Product()
+        self.assertRaises(DataValidationError, new_product.deserialize, data)
+
+    def test_serialize_includes_state(self):
+        """It should include the state field when serializing a Product"""
+        product = ProductFactory()
+        product.state = ProductState.DISCONTINUED
+        data = product.serialize()
+        self.assertIn("state", data)
+        self.assertEqual(data["state"], "DISCONTINUED")
 
 
 ######################################################################
