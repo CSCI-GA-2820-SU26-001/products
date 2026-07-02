@@ -21,6 +21,7 @@ Test cases for Product Model
 # pylint: disable=duplicate-code
 import os
 import logging
+from decimal import Decimal
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -243,6 +244,15 @@ class TestProductModel(TestCase):
             new_product = Product()
             new_product.deserialize(data)
             self.assertEqual(new_product.state, state)
+
+    def test_deserialize_accepts_productstate_instance(self):
+        """It should deserialize a Product when state is already a ProductState"""
+        product = ProductFactory()
+        data = product.serialize()
+        data["state"] = ProductState.DISCONTINUED
+        new_product = Product()
+        new_product.deserialize(data)
+        self.assertEqual(new_product.state, ProductState.DISCONTINUED)
 
     def test_deserialize_accepts_lowercase_state(self):
         """It should deserialize a Product with a lowercase state value"""
