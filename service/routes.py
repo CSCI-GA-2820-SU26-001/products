@@ -52,14 +52,16 @@ def index():
 def create_product():
     """Creates a new Product
 
-    Accept JSON format to create a new product. All fields are required.
+    Accept JSON format to create a new product. All fields are required
+    except "state", which defaults to "ACTIVE" if not provided.
     Sample :
         {
             "sku": 1001,
             "name": "Test Product",
             "description": "A test product",
             "price": 19.99,
-            "image": "http://example.com/image.jpg"
+            "image": "http://example.com/image.jpg",
+            "state": "ACTIVE"
         }
     """
     app.logger.info("Request to create a Product")

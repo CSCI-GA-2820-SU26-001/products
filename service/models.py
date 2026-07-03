@@ -5,6 +5,7 @@ All of the models are stored in this module
 """
 
 import logging
+from enum import Enum
 from flask_sqlalchemy import SQLAlchemy
 
 logger = logging.getLogger("flask.app")
@@ -15,6 +16,14 @@ db = SQLAlchemy()
 
 class DataValidationError(Exception):
     """Used for an data validation errors when deserializing"""
+
+
+class ProductState(Enum):
+    """Enumeration of valid Product states"""
+
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    DISCONTINUED = "DISCONTINUED"
 
 
 class Product(db.Model):
@@ -33,6 +42,11 @@ class Product(db.Model):
     description = db.Column(db.String(1000), nullable=False)
     price = db.Column(db.Numeric(10, 2), nullable=False)
     image = db.Column(db.String(2000), nullable=False)
+    state = db.Column(
+        db.Enum(ProductState, name="product_state"),
+        nullable=False,
+        default=ProductState.ACTIVE,
+    )
 
     def __repr__(self):
         return f"<Product {self.name} sku=[{self.sku}]>"
@@ -69,6 +83,7 @@ class Product(db.Model):
             "description": self.description,
             "price": float(self.price),
             "image": self.image,
+            "state": self.state.name if self.state else None,
         }
 
     def deserialize(self, data):
@@ -84,6 +99,9 @@ class Product(db.Model):
             self.description = data["description"]
             self.price = data["price"]
             self.image = data["image"]
+            # state is optional; defaults to ACTIVE when not provided
+            state = data.get("state", ProductState.ACTIVE.name)
+            self.state = self._parse_state(state)
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
@@ -96,6 +114,25 @@ class Product(db.Model):
                 + str(error)
             ) from error
         return self
+
+    @staticmethod
+    def _parse_state(state):
+        """Validates and converts a state value into a ProductState
+
+        Args:
+            state: a ProductState instance or a string name of one
+
+        Raises:
+            DataValidationError: if the state value is not a valid ProductState
+        """
+        if isinstance(state, ProductState):
+            return state
+        if isinstance(state, str) and state.upper() in ProductState.__members__:
+            return ProductState[state.upper()]
+        valid_states = [s.name for s in ProductState]
+        raise DataValidationError(
+            f"Invalid state: '{state}'. Must be one of {valid_states}"
+        )
 
     ##################################################
     # CLASS METHODS
