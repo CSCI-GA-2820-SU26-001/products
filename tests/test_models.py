@@ -184,37 +184,6 @@ class TestProductModel(TestCase):
         self.assertEqual(found.sku, product.sku)
         self.assertEqual(found.name, product.name)
 
-    def test_find_by_price_matches(self):
-        """It should find Products with price less than or equal to given price"""
-        cheap_product = ProductFactory()
-        cheap_product.price = Decimal("10.00")
-        cheap_product.create()
-
-        mid_product = ProductFactory()
-        mid_product.price = Decimal("25.00")
-        mid_product.create()
-
-        expensive_product = ProductFactory()
-        expensive_product.price = Decimal("50.00")
-        expensive_product.create()
-
-        products = Product.find_by_price(Decimal("25.00"))
-
-        self.assertEqual(len(products), 2)
-        self.assertIn(cheap_product, products)
-        self.assertIn(mid_product, products)
-        self.assertNotIn(expensive_product, products)
-
-    def test_find_by_price_no_matches(self):
-        """It should return no Products when all products have prices above given price"""
-        expensive_product = ProductFactory()
-        expensive_product.price = Decimal("50.00")
-        expensive_product.create()
-
-        products = Product.find_by_price(Decimal("25.00"))
-
-        self.assertEqual(len(products), 0)
-
     def test_serialize_a_product(self):
         """It should serialize a Product into a dictionary"""
         product = ProductFactory()

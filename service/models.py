@@ -150,12 +150,6 @@ class Product(db.Model):
         logger.info("Processing lookup for sku %s ...", by_sku)
         return cls.query.session.get(cls, by_sku)
 
-    @classmethod
-    def find_by_price(cls, price):
-        """Finds all Products with price less than or equal to the given price"""
-        logger.info("Processing lookup for products with price <= %s ...", price)
-        return cls.query.filter(cls.price <= price).all()
-
     def update(self) -> None:
         """
         Updates a Product to the database
