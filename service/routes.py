@@ -24,7 +24,7 @@ and Delete Product
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
 from service.common import status
-from service.models import Product  # HTTP Status Codes
+from service.models import Product, ProductState  # HTTP Status Codes
 
 
 ######################################################################
@@ -161,6 +161,78 @@ def update_products(by_sku):
     product.update()
 
     app.logger.info("Product with SKU: %d updated.", product.sku)
+    return product.serialize(), status.HTTP_200_OK
+
+
+######################################################################
+# ACTIVATE AN EXISTING PRODUCT
+######################################################################
+@app.route("/products/<int:by_sku>/activate", methods=["PUT"])
+def activate_product(by_sku):
+    """
+    Activate a Product
+
+    This endpoint will Activate a Product with the provided sku
+    """
+
+    app.logger.info("Request to Activate Product with sku [%s]", by_sku)
+
+    product = Product.find(by_sku)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with sku '{by_sku}' was not found.")
+
+    product.state = ProductState.ACTIVE
+    product.update()
+
+    app.logger.info("Product with SKU: %d activated.", product.sku)
+    return product.serialize(), status.HTTP_200_OK
+
+
+######################################################################
+# DEACTIVATE AN EXISTING PRODUCT
+######################################################################
+@app.route("/products/<int:by_sku>/deactivate", methods=["PUT"])
+def deactivate_product(by_sku):
+    """
+    Deactivate a Product
+
+    This endpoint will Deactivate a Product with the provided sku
+    """
+
+    app.logger.info("Request to Deactivate Product with sku [%s]", by_sku)
+
+    product = Product.find(by_sku)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with sku '{by_sku}' was not found.")
+
+    product.state = ProductState.INACTIVE
+    product.update()
+
+    app.logger.info("Product with SKU: %d deactivated.", product.sku)
+    return product.serialize(), status.HTTP_200_OK
+
+
+######################################################################
+# DISCONTINUE AN EXISTING PRODUCT
+######################################################################
+@app.route("/products/<int:by_sku>/discontinue", methods=["PUT"])
+def discontinue_product(by_sku):
+    """
+    Discontinue a Product
+
+    This endpoint will Discontinue a Product with the provided sku
+    """
+
+    app.logger.info("Request to Discontinue a Product with sku [%s]", by_sku)
+
+    product = Product.find(by_sku)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with sku '{by_sku}' was not found.")
+
+    product.state = ProductState.DISCONTINUED
+    product.update()
+
+    app.logger.info("Product with SKU: %d discontinued.", product.sku)
     return product.serialize(), status.HTTP_200_OK
 
 

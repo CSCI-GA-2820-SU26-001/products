@@ -281,6 +281,168 @@ class TestProductService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     # ----------------------------------------------------------
+    # TEST DISCONTINUE ACTION
+    # ----------------------------------------------------------
+    def test_discontinue_product_success(self):
+        """It should discontinue an existing Product"""
+
+        # create a product to discontinue
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # discontinue the product
+        new_product = response.get_json()
+        logging.debug(new_product)
+        sku = new_product["sku"]
+        response = self.client.put(f"{BASE_URL}/{sku}/discontinue")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        discontinued_product = response.get_json()
+        self.assertEqual(discontinued_product["state"], ProductState.DISCONTINUED.name)
+
+    def test_discontinue_non_existing_product_fail(self):
+        """It should not discontinue a non-existing Product"""
+
+        # create a product
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # discontinue a non existing product
+        prod = response.get_json()
+        logging.debug(prod)
+        invalid_sku = prod["sku"] + 1
+        response = self.client.put(f"{BASE_URL}/{invalid_sku}/discontinue")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_discontinue_already_discontinued_product_success(self):
+        """It should discontinue an existing Product that is already discontinued"""
+
+        # create a product to discontinue
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # discontinue the product
+        logging.debug(response.get_json())
+        sku = response.get_json()["sku"]
+        response = self.client.put(f"{BASE_URL}/{sku}/discontinue")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # discontinue the product again
+        response = self.client.put(f"{BASE_URL}/{sku}/discontinue")
+        logging.debug(response.get_json())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.get_json()["state"], ProductState.DISCONTINUED.name)
+
+    # ----------------------------------------------------------
+    # TEST DEACTIVATE ACTION
+    # ----------------------------------------------------------
+    def test_deactivate_product_success(self):
+        """It should deactivate an existing Product"""
+
+        # create a product to deactivate
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # deactivate the product
+        new_product = response.get_json()
+        logging.debug(new_product)
+        sku = new_product["sku"]
+        response = self.client.put(f"{BASE_URL}/{sku}/deactivate")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        deactivated_product = response.get_json()
+        self.assertEqual(deactivated_product["state"], ProductState.INACTIVE.name)
+
+    def test_deactivate_non_existing_product_fail(self):
+        """It should not deactivate a non-existing Product"""
+
+        # create a product
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # deactivate a non existing product
+        prod = response.get_json()
+        logging.debug(prod)
+        invalid_sku = prod["sku"] + 1
+        response = self.client.put(f"{BASE_URL}/{invalid_sku}/deactivate")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_deactivate_already_inactive_product_success(self):
+        """It should deactivate an existing Product that is already activated"""
+
+        # create a product to deactivate
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # deactivate the product
+        logging.debug(response.get_json())
+        sku = response.get_json()["sku"]
+        response = self.client.put(f"{BASE_URL}/{sku}/deactivate")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # deactivate the product again
+        response = self.client.put(f"{BASE_URL}/{sku}/deactivate")
+        logging.debug(response.get_json())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.get_json()["state"], ProductState.INACTIVE.name)
+
+    # ----------------------------------------------------------
+    # TEST ACTIVATE ACTION
+    # ----------------------------------------------------------
+    def test_activate_product_success(self):
+        """It should activate an existing Product"""
+
+        # create a product to activate
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # change the product to inactive from its default active state
+        response = self.client.put(f"{BASE_URL}/{response.get_json()["sku"]}/deactivate")
+
+        # activate the product
+        new_product = response.get_json()
+        logging.debug(new_product)
+        sku = new_product["sku"]
+        response = self.client.put(f"{BASE_URL}/{sku}/activate")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        activated_product = response.get_json()
+        self.assertEqual(activated_product["state"], ProductState.ACTIVE.name)
+
+    def test_activate_non_existing_product_fail(self):
+        """It should not activate a non-existing Product"""
+
+        # create a product
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # activate a non existing product
+        prod = response.get_json()
+        logging.debug(prod)
+        invalid_sku = prod["sku"] + 1
+        response = self.client.put(f"{BASE_URL}/{invalid_sku}/activate")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_activate_already_activated_product_success(self):
+        """It should activate an existing Product that is already activated"""
+
+        # create a product to activate
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # activate the product that is already activated by default
+        response = self.client.put(f"{BASE_URL}/{response.get_json()["sku"]}/activate")
+        logging.debug(response.get_json())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.get_json()["state"], ProductState.ACTIVE.name)
+
+    # ----------------------------------------------------------
     # TEST STATE FIELD
     # ----------------------------------------------------------
     def test_create_product_with_valid_state(self):
