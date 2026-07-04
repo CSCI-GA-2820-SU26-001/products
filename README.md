@@ -179,6 +179,96 @@ OR
 
 ```
 
+### Activate a Product
+
+Requires a `Content-Type: application/json` header. No request body is used.
+
+```
+PUT /products/<sku>/activate
+
+200 OK
+
+{
+  "description": "Example description",
+  "image": "https://dummyimage.com/623x359",
+  "name": "Example Name",
+  "price": 78875.51,
+  "sku": 28,
+  "state": "ACTIVE"
+}
+
+OR
+
+404 NOT FOUND
+
+{
+  "error": "Not Found",
+  "message": "404 Not Found: Product with id '999' was not found.",
+  "status": 404
+}
+
+```
+
+### Deactivate a Product
+
+Requires a `Content-Type: application/json` header. No request body is used.
+
+```
+PUT /products/<sku>/deactivate
+
+200 OK
+
+{
+  "description": "Example description",
+  "image": "https://dummyimage.com/623x359",
+  "name": "Example Name",
+  "price": 78875.51,
+  "sku": 28,
+  "state": "INACTIVE"
+}
+
+OR
+
+404 NOT FOUND
+
+{
+  "error": "Not Found",
+  "message": "404 Not Found: Product with id '999' was not found.",
+  "status": 404
+}
+
+```
+
+### Discontinue a Product
+
+Requires a `Content-Type: application/json` header. No request body is used.
+
+```
+PUT /products/<sku>/discontinue
+
+200 OK
+
+{
+  "description": "Example description",
+  "image": "https://dummyimage.com/623x359",
+  "name": "Example Name",
+  "price": 78875.51,
+  "sku": 28,
+  "state": "DISCONTINUED"
+}
+
+OR
+
+404 NOT FOUND
+
+{
+  "error": "Not Found",
+  "message": "404 Not Found: Product with id '999' was not found.",
+  "status": 404
+}
+
+```
+
 ## License
 
 Copyright (c) 2016, 2025 [John Rofrano](https://www.linkedin.com/in/JohnRofrano/). All rights reserved.

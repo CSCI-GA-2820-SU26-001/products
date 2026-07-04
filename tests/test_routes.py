@@ -319,9 +319,7 @@ class TestProductService(TestCase):
         test_product = self._create_products(1)[0]
         new_product = test_product.serialize()
         new_product["state"] = "INACTIVE"
-        response = self.client.put(
-            f"{BASE_URL}/{new_product['sku']}", json=new_product
-        )
+        response = self.client.put(f"{BASE_URL}/{new_product['sku']}", json=new_product)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_product = response.get_json()
         self.assertEqual(updated_product["state"], "INACTIVE")
@@ -331,9 +329,7 @@ class TestProductService(TestCase):
         test_product = self._create_products(1)[0]
         new_product = test_product.serialize()
         new_product["state"] = "NOT_A_REAL_STATE"
-        response = self.client.put(
-            f"{BASE_URL}/{new_product['sku']}", json=new_product
-        )
+        response = self.client.put(f"{BASE_URL}/{new_product['sku']}", json=new_product)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_product_without_state_defaults_to_active(self):
@@ -393,3 +389,45 @@ class TestProductService(TestCase):
                 response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         app.config["PROPAGATE_EXCEPTIONS"] = True
+
+    def test_activate_product(self):
+        """It should Activate an existing Product"""
+        test_product = self._create_products(1)[0]
+        response = self.client.put(f"{BASE_URL}/{test_product.sku}/activate")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["sku"], test_product.sku)
+        self.assertEqual(data["state"], "ACTIVE")
+
+    def test_deactivate_product(self):
+        """It should Deactivate an existing Product"""
+        test_product = self._create_products(1)[0]
+        response = self.client.put(f"{BASE_URL}/{test_product.sku}/deactivate")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["sku"], test_product.sku)
+        self.assertEqual(data["state"], "INACTIVE")
+
+    def test_discontinue_product(self):
+        """It should Discontinue an existing Product"""
+        test_product = self._create_products(1)[0]
+        response = self.client.put(f"{BASE_URL}/{test_product.sku}/discontinue")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["sku"], test_product.sku)
+        self.assertEqual(data["state"], "DISCONTINUED")
+
+    def test_activate_product_not_found(self):
+        """It should return 404 when activating a Product that does not exist"""
+        response = self.client.put(f"{BASE_URL}/0/activate")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_deactivate_product_not_found(self):
+        """It should return 404 when deactivating a Product that does not exist"""
+        response = self.client.put(f"{BASE_URL}/0/deactivate")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_discontinue_product_not_found(self):
+        """It should return 404 when discontinuing a Product that does not exist"""
+        response = self.client.put(f"{BASE_URL}/0/discontinue")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
