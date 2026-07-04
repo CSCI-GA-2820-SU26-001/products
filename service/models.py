@@ -156,6 +156,28 @@ class Product(db.Model):
         logger.info("Processing lookup for products with price <= %s ...", price)
         return cls.query.filter(cls.price <= price).all()
 
+    @classmethod
+    def find_by_price_range(cls, min_price=None, max_price=None):
+        """Finds all Products within an inclusive price range
+
+        Either bound may be omitted to leave that side of the range open.
+
+        Args:
+            min_price: optional lower bound (matches price >= min_price)
+            max_price: optional upper bound (matches price <= max_price)
+        """
+        logger.info(
+            "Processing lookup for products with price range min=%s, max=%s ...",
+            min_price,
+            max_price,
+        )
+        query = cls.query
+        if min_price is not None:
+            query = query.filter(cls.price >= min_price)
+        if max_price is not None:
+            query = query.filter(cls.price <= max_price)
+        return query.all()
+
     def update(self) -> None:
         """
         Updates a Product to the database

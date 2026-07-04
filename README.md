@@ -132,6 +132,50 @@ GET /products
 ]
 ```
 
+Add an optional `price` query string to filter the list down to products
+priced at or below that value, and/or a `min_price` query string for
+products priced at or above a value. Combine both for a range. Without
+either param, behavior is unchanged.
+
+```
+GET /products?price=50.00
+
+200 OK
+
+[
+  {
+    "description": "Example description",
+    "image": "https://dummyimage.com/623x359",
+    "name": "Example Name",
+    "price": 25.00,
+    "sku": 28,
+    "state": "ACTIVE"
+  }
+]
+```
+
+```
+GET /products?min_price=50.00
+
+200 OK
+
+[
+  {
+    "description": "Example description",
+    "image": "https://dummyimage.com/623x359",
+    "name": "Example Name",
+    "price": 75.00,
+    "sku": 29,
+    "state": "ACTIVE"
+  }
+]
+```
+
+`GET /products?min_price=20.00&price=75.00` returns products priced between
+20.00 and 75.00 inclusive. If no products match (or none exist), the
+endpoint still returns `200 OK` with an empty array `[]`. A non-numeric
+`price` or `min_price` value returns `400 BAD REQUEST`.
+
 ### Delete a Product
 
 ```

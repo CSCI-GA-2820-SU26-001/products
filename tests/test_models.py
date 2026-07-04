@@ -215,6 +215,60 @@ class TestProductModel(TestCase):
 
         self.assertEqual(len(products), 0)
 
+    def test_find_by_price_range_min_only(self):
+        """It should find Products priced at or above a minimum value"""
+        cheap_product = ProductFactory()
+        cheap_product.price = Decimal("10.00")
+        cheap_product.create()
+
+        mid_product = ProductFactory()
+        mid_product.price = Decimal("25.00")
+        mid_product.create()
+
+        expensive_product = ProductFactory()
+        expensive_product.price = Decimal("50.00")
+        expensive_product.create()
+
+        products = Product.find_by_price_range(min_price=Decimal("25.00"))
+
+        self.assertEqual(len(products), 2)
+        self.assertIn(mid_product, products)
+        self.assertIn(expensive_product, products)
+        self.assertNotIn(cheap_product, products)
+
+    def test_find_by_price_range_both_bounds(self):
+        """It should find Products within an inclusive min/max range"""
+        below = ProductFactory()
+        below.price = Decimal("10.00")
+        below.create()
+
+        within = ProductFactory()
+        within.price = Decimal("25.00")
+        within.create()
+
+        above = ProductFactory()
+        above.price = Decimal("50.00")
+        above.create()
+
+        products = Product.find_by_price_range(
+            min_price=Decimal("20.00"), max_price=Decimal("30.00")
+        )
+
+        self.assertEqual(len(products), 1)
+        self.assertIn(within, products)
+        self.assertNotIn(below, products)
+        self.assertNotIn(above, products)
+
+    def test_find_by_price_range_no_bounds(self):
+        """It should return every Product when neither bound is given"""
+        for _ in range(3):
+            product = ProductFactory()
+            product.create()
+
+        products = Product.find_by_price_range()
+
+        self.assertEqual(len(products), 3)
+
     def test_serialize_a_product(self):
         """It should serialize a Product into a dictionary"""
         product = ProductFactory()
