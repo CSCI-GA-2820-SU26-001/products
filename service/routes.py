@@ -21,6 +21,7 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Product
 """
 
+from decimal import Decimal, InvalidOperation
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
 from service.common import status
@@ -100,11 +101,29 @@ def get_product(sku):
 ######################################################################
 @app.route("/products", methods=["GET"])
 def list_products():
-    """Returns all of the Products"""
+    """Returns all of the Products
+
+    Optionally filters the list with query strings:
+      - ?price=<value>      Products priced at or below the given value
+      - ?min_price=<value>  Products priced at or above the given value
+    Both may be combined for a range. Without either query param, behavior
+    is unchanged.
+    """
     app.logger.info("Request for product list")
 
-    # Return all of the Products
-    products = Product.all()
+    max_price = _parse_price_query_arg("price")
+    min_price = _parse_price_query_arg("min_price")
+
+    if max_price is not None or min_price is not None:
+        app.logger.info(
+            "Filtering products with price range min=%s, max=%s",
+            min_price,
+            max_price,
+        )
+        products = Product.find_by_price_range(min_price=min_price, max_price=max_price)
+    else:
+        # Return all of the Products
+        products = Product.all()
 
     results = [product.serialize() for product in products]
     app.logger.info("Returning %d product", len(results))
@@ -239,6 +258,25 @@ def discontinue_product(by_sku):
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
+
+
+def _parse_price_query_arg(arg_name):
+    """Reads a price-like query string argument and parses it as a Decimal
+
+    Aborts with 400 Bad Request if the value is present but not a valid
+    number. Returns None if the argument was not supplied at all.
+    """
+    value = request.args.get(arg_name)
+    if value is None:
+        return None
+    try:
+        return Decimal(value)
+    except (InvalidOperation, ValueError):
+        abort(
+            status.HTTP_400_BAD_REQUEST,
+            f"Invalid {arg_name} value: '{value}'. Must be a number.",
+        )
+        return None  # pragma: no cover - abort() always raises
 
 
 def check_content_type(content_type):

@@ -179,6 +179,107 @@ class TestProductService(TestCase):
         self.assertEqual(len(data), 5)
 
     # ----------------------------------------------------------
+    # TEST QUERY BY PRICE
+    # ----------------------------------------------------------
+    def _create_product_with_price(self, sku: int, price: float):
+        """Helper to create a Product with a specific price"""
+        new_product = {
+            "sku": sku,
+            "name": f"Product {sku}",
+            "description": "A product for price filter tests.",
+            "price": price,
+            "image": "http://example.com/image.jpg",
+        }
+        response = self.client.post(BASE_URL, json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        return response.get_json()
+
+    def test_query_products_by_price(self):
+        """It should return only Products priced at or below the given value"""
+        self._create_product_with_price(200, 25.00)
+        self._create_product_with_price(201, 50.00)
+        self._create_product_with_price(202, 75.00)
+
+        response = self.client.get(f"{BASE_URL}?price=50.00")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        skus = {product["sku"] for product in data}
+        self.assertEqual(skus, {200, 201})
+        self.assertNotIn(202, skus)
+        for product in data:
+            self.assertLessEqual(product["price"], 50.00)
+
+    def test_query_products_by_price_no_matches(self):
+        """It should return an empty array when every product is priced above the value"""
+        self._create_product_with_price(210, 60.00)
+        self._create_product_with_price(211, 99.99)
+
+        response = self.client.get(f"{BASE_URL}?price=50.00")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.get_json(), [])
+
+    def test_query_products_by_price_no_products(self):
+        """It should return an empty array when there are no products at all"""
+        response = self.client.get(f"{BASE_URL}?price=50.00")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.get_json(), [])
+
+    def test_query_products_by_price_invalid_value(self):
+        """It should return 400 for a non-numeric price query value"""
+        response = self.client.get(f"{BASE_URL}?price=not-a-number")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_query_products_by_min_price(self):
+        """It should return only Products priced at or above the given value"""
+        self._create_product_with_price(220, 25.00)
+        self._create_product_with_price(221, 50.00)
+        self._create_product_with_price(222, 75.00)
+
+        response = self.client.get(f"{BASE_URL}?min_price=50.00")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        skus = {product["sku"] for product in data}
+        self.assertEqual(skus, {221, 222})
+        self.assertNotIn(220, skus)
+        for product in data:
+            self.assertGreaterEqual(product["price"], 50.00)
+
+    def test_query_products_by_min_price_no_matches(self):
+        """It should return an empty array when every product is priced below min_price"""
+        self._create_product_with_price(230, 10.00)
+        self._create_product_with_price(231, 20.00)
+
+        response = self.client.get(f"{BASE_URL}?min_price=50.00")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.get_json(), [])
+
+    def test_query_products_by_min_price_invalid_value(self):
+        """It should return 400 for a non-numeric min_price query value"""
+        response = self.client.get(f"{BASE_URL}?min_price=not-a-number")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_query_products_by_price_range(self):
+        """It should return only Products within a combined min/max range"""
+        self._create_product_with_price(240, 10.00)
+        self._create_product_with_price(241, 50.00)
+        self._create_product_with_price(242, 90.00)
+
+        response = self.client.get(f"{BASE_URL}?min_price=20.00&price=75.00")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        skus = {product["sku"] for product in data}
+        self.assertEqual(skus, {241})
+
+    def test_query_products_without_price_unchanged(self):
+        """It should still return every product when no price query is given"""
+        self._create_product_with_price(250, 10.00)
+        self._create_product_with_price(251, 90.00)
+
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.get_json()), 2)
+
+    # ----------------------------------------------------------
     # TEST DELETE
     # ----------------------------------------------------------
     def test_delete_product(self):
