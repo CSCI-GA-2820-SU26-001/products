@@ -98,6 +98,13 @@ class TestProductService(TestCase):
         data = response.get_json()
         self.assertEqual(data["name"], "Product REST API Service")
 
+    def test_health(self):
+        """It should return a healthy status"""
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["status"], "OK")
+
     def test_create_product(self):
         """
         Test the creation of new product in route /products

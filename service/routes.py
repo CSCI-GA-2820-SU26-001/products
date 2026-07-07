@@ -29,6 +29,15 @@ from service.models import Product, ProductState  # HTTP Status Codes
 
 
 ######################################################################
+# HEALTH CHECK
+######################################################################
+@app.route("/health")
+def health_check():
+    """Health endpoint for Kubernetes liveness/readiness probes"""
+    return jsonify(status="OK"), status.HTTP_200_OK
+
+
+######################################################################
 # GET INDEX
 ######################################################################
 @app.route("/")
