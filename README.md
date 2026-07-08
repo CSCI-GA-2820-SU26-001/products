@@ -2,6 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
+[![codecov](https://codecov.io/github/CSCI-GA-2820-SU26-001/products/graph/badge.svg?token=TL0LMSCSN3)](https://codecov.io/github/CSCI-GA-2820-SU26-001/products)
 
 ## Overview
 
