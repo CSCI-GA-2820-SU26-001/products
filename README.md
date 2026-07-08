@@ -220,6 +220,35 @@ OR
   "message": "404 Not Found: Product with id '999' was not found.",
   "status": 404
 }
+```
+
+### Activate a Product
+
+```
+PUT /products/<sku>/activate
+
+200 OK on success.
+404 NOT FOUND on invalide sku.
+```
+
+### Deactivate a Product
+
+```
+PUT /products/<sku>/deactivate
+
+200 OK on success.
+404 NOT FOUND on invalide sku.
+```
+
+
+### Discontinue a Product
+
+```
+PUT /products/<sku>/discontinue
+
+200 OK on success.
+404 NOT FOUND on invalide sku.
+
 
 ```
 
