@@ -3,6 +3,10 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
 
+
+
+[![Build Status](https://github.com/CSCI-GA-2820-SU26-001/products/actions/workflows/ci.yml/badge.svg)](https://github.com/CSCI-GA-2820-SU26-001/products/actions)
+
 ## Overview
 
 A REST API for managing products as part of an ecommerce application. It stores each product along side a series of descriptors for it: a name, description, price, an associated image and a sku code. It can be used to create new products and read, update, list or delete existing ones.
