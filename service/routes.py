@@ -42,15 +42,23 @@ def health_check():
 ######################################################################
 @app.route("/")
 def index():
-    """Root URL response"""
-    return (
-        jsonify(
-            name="Product REST API Service",
-            version="1.0",
-            paths=url_for("list_products", _external=True),
-        ),
-        status.HTTP_200_OK,
-    )
+    """Base URL for our service
+
+    Serves the HTML UI by default (browsers, plain requests with no
+    Accept header, etc.) and the JSON API info only when the client
+    explicitly asks for JSON without also accepting HTML.
+    """
+    accept_header = request.headers.get("Accept", "")
+    if "application/json" in accept_header and "text/html" not in accept_header:
+        return (
+            jsonify(
+                name="Product REST API Service",
+                version="1.0",
+                paths=url_for("list_products", _external=True),
+            ),
+            status.HTTP_200_OK,
+        )
+    return app.send_static_file("index.html")
 
 
 ######################################################################
@@ -78,6 +86,13 @@ def create_product():
     check_content_type("application/json")
     product = Product()
     product.deserialize(request.get_json())
+
+    if Product.find(product.sku):
+        abort(
+            status.HTTP_409_CONFLICT,
+            f"Product with sku '{product.sku}' already exists.",
+        )
+
     product.create()
     location_url = url_for("get_product", sku=product.sku, _external=True)
     return (

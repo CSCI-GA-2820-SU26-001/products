@@ -21,9 +21,9 @@ RUN useradd --uid 1001 --create-home appuser \
     && chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 8080
+EXPOSE ${PORT}
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health').read()" || exit 1
+    CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\", \"8080\")}/health').read()" || exit 1
 
-CMD ["gunicorn", "--bind=0.0.0.0:8080", "--log-level=info", "wsgi:app"]
+CMD ["sh", "-c", "gunicorn --bind=0.0.0.0:${PORT:-8080} --log-level=info wsgi:app"]
