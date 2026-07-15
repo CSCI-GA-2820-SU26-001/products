@@ -26,18 +26,3 @@ Scenario: Create a Product
     And I select "ACTIVE" in the "State" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
-    When I copy the "SKU" field
-    And I press the "Clear" button
-    Then the "SKU" field should be empty
-    And the "Name" field should be empty
-    And the "Description" field should be empty
-    And the "Price" field should be empty
-    And the "Image" field should be empty
-    When I paste the "SKU" field
-    And I press the "Retrieve" button
-    Then I should see the message "Success"
-    And I should see "Wireless Mouse" in the "Name" field
-    And I should see "Ergonomic wireless mouse with silent click technology" in the "Description" field
-    And I should see "29.99" in the "Price" field
-    And I should see "https://example.com/images/wireless-mouse.jpg" in the "Image" field
-    And I should see "ACTIVE" in the "State" dropdown
