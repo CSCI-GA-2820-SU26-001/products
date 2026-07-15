@@ -1,3 +1,0 @@
-"""
-Environment for Behave Testing
-"""

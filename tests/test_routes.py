@@ -95,6 +95,12 @@ class TestProductService(TestCase):
         """It should call the home page"""
         response = self.client.get("/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("Product Demo REST API Service", response.get_data(as_text=True))
+
+    def test_index_json(self):
+        """It should return JSON API info when the client explicitly asks for it"""
+        response = self.client.get("/", headers={"Accept": "application/json"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["name"], "Product REST API Service")
 
@@ -127,6 +133,26 @@ class TestProductService(TestCase):
         self.assertEqual(float(data["price"]), new_product["price"])
         self.assertEqual(data["image"], new_product["image"])
         self.assertEqual(data["state"], "ACTIVE")
+
+    def test_create_product_duplicate_sku(self):
+        """It should not create a product with a sku that already exists"""
+        new_product = {
+            "sku": 1,
+            "name": "Test Product",
+            "description": "This is a test product.",
+            "price": 9.99,
+            "image": "http://example.com/image.jpg",
+        }
+        response = self.client.post("/products", json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # attempt to create another product with the same sku
+        response = self.client.post("/products", json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        data = response.get_json()
+        self.assertIn("already exists", data["message"])
+        self.assertNotIn("psycopg", data["message"])
+        self.assertNotIn("UniqueViolation", data["message"])
 
     def test_bad_request_missing_field(self):
         """It should not create a product with missing fields"""
@@ -510,7 +536,9 @@ class TestProductService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # change the product to inactive from its default active state
-        response = self.client.put(f"{BASE_URL}/{response.get_json()["sku"]}/deactivate")
+        response = self.client.put(
+            f"{BASE_URL}/{response.get_json()["sku"]}/deactivate"
+        )
 
         # activate the product
         new_product = response.get_json()
@@ -589,9 +617,7 @@ class TestProductService(TestCase):
         test_product = self._create_products(1)[0]
         new_product = test_product.serialize()
         new_product["state"] = "INACTIVE"
-        response = self.client.put(
-            f"{BASE_URL}/{new_product['sku']}", json=new_product
-        )
+        response = self.client.put(f"{BASE_URL}/{new_product['sku']}", json=new_product)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_product = response.get_json()
         self.assertEqual(updated_product["state"], "INACTIVE")
@@ -601,9 +627,7 @@ class TestProductService(TestCase):
         test_product = self._create_products(1)[0]
         new_product = test_product.serialize()
         new_product["state"] = "NOT_A_REAL_STATE"
-        response = self.client.put(
-            f"{BASE_URL}/{new_product['sku']}", json=new_product
-        )
+        response = self.client.put(f"{BASE_URL}/{new_product['sku']}", json=new_product)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_product_without_state_defaults_to_active(self):

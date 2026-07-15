@@ -7,6 +7,7 @@ All of the models are stored in this module
 import logging
 from enum import Enum
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
 
 logger = logging.getLogger("flask.app")
 
@@ -57,6 +58,12 @@ class Product(db.Model):
         try:
             db.session.add(self)
             db.session.commit()
+        except IntegrityError as e:
+            db.session.rollback()
+            logger.error("Duplicate sku on create: %s", self.sku)
+            raise DataValidationError(
+                f"Product with sku '{self.sku}' already exists."
+            ) from e
         except Exception as e:
             db.session.rollback()
             logger.error("Error creating record: %s", self)
