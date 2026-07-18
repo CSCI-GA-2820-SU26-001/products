@@ -133,4 +133,54 @@ $(function () {
         });
     });
 
+    // ****************************************
+    // Filter Products by Price
+    // ****************************************
+
+    $("#filter-btn").click(function () {
+
+        let min_price = $("#product_min_price").val();
+        let max_price = $("#product_max_price").val();
+
+        let queryParams = [];
+        if (min_price) {
+            queryParams.push("min_price=" + encodeURIComponent(min_price));
+        }
+        if (max_price) {
+            queryParams.push("price=" + encodeURIComponent(max_price));
+        }
+        let queryString = queryParams.join("&");
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "GET",
+            url: `/products?${queryString}`,
+            contentType: "application/json",
+            data: ''
+        })
+
+        ajax.done(function(res){
+            $("#filter_results tbody").remove();
+            if (res.length === 0) {
+                let empty = '<tbody><tr><td colspan="6" class="text-center">No products found in this price range.</td></tr></tbody>';
+                $("#filter_results table").append(empty);
+                flash_message("Success")
+                return;
+            }
+            let rows = '<tbody>';
+            for (let i = 0; i < res.length; i++) {
+                let product = res[i];
+                rows += `<tr id="filter_row_${i}"><td>${product.sku}</td><td>${product.name}</td><td>${product.description}</td><td>${product.price}</td><td>${product.image}</td><td>${product.state}</td></tr>`;
+            }
+            rows += '</tbody>';
+            $("#filter_results table").append(rows);
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+    });
+
 })
