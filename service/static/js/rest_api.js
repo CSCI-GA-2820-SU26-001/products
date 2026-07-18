@@ -113,24 +113,24 @@ $(function () {
     });
 
 
-$("#discontinue-btn").click(function () {
+    $("#discontinue-btn").click(function () {
 
-    let sku = $("#product_sku").val();
+        let sku = $("#product_sku").val();
 
-    let ajax = $.ajax({
-        type: "PUT",
-        url: `/products/${sku}/discontinue`,
-        contentType: "application/json"
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/products/${sku}/discontinue`,
+            contentType: "application/json"
+        });
+
+        ajax.done(function (res) {
+            update_form_data(res);
+            flash_message("Success: product discontinued");
+        });
+
+        ajax.fail(function (res) {
+            flash_message(res.responseJSON.message);
+        });
     });
-
-    ajax.done(function (res) {
-        update_form_data(res);
-        flash_message("Success: product discontinued");
-    });
-
-    ajax.fail(function (res) {
-        flash_message(res.responseJSON.message);
-    });
-});
 
 })
