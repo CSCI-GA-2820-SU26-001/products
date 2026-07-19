@@ -60,6 +60,19 @@
       .price-filter-btn svg {
         display: block;
       }
+      .flash-toast {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1050;
+        min-width: 320px;
+        max-width: 90%;
+        text-align: center;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      }
     </style>
   </head>
   <body>
@@ -69,10 +82,8 @@
       </div>
 
       <!-- Flash Message -->
-      <div class="table-responsive">
-        <table class="table">
-          <tr><td>Status:</td><td><span id="flash_message"></span></td></tr>
-        </table>
+      <div id="flash_banner" class="alert flash-toast" role="alert">
+        <span id="flash_message"></span>
       </div>
 
       <!-- FORM -->

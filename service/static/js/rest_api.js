@@ -14,10 +14,23 @@ $(function () {
         $("#product_state").val(res.state);
     }
 
-    // Updates the flash message area
+    // Updates the flash message area and pops it up above the screen
     function flash_message(message) {
+        let $banner = $("#flash_banner");
+        let isError = /bad request|not found|conflict|unsupported|error|does not exist/i.test(message);
+
+        $banner.removeClass("alert-success alert-danger");
+        $banner.addClass(isError ? "alert-danger" : "alert-success");
+
         $("#flash_message").empty();
         $("#flash_message").append(message);
+
+        $banner.stop(true, true).show();
+
+        clearTimeout(flash_message.timer);
+        flash_message.timer = setTimeout(function () {
+            $banner.fadeOut(400);
+        }, 4000);
     }
 
     // ****************************************
