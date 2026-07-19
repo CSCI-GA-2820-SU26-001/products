@@ -153,7 +153,7 @@ Scenario: Filter Products by Price with No Matches
     And I set the "Max Price" to "2000.00"
     And I press the "Filter" button
     Then I should see an empty list
-    
+
 Scenario: Filter Products by Price with a Non-Numeric Value
     When I visit the "Home Page"
     And I set the "Min Price" to "abc"
@@ -210,6 +210,18 @@ Scenario: Update a Product
     And I press the "Update" button
     Then I should see the message "Product with id '3002' was not found."
 
-
-
-
+Scenario: Delete a Product
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "ACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+    When I press the "Delete" button
+    Then I should see the message "Deleted"
+    When I set the "SKU" to "3001"
+    And I press the "Delete" button
+    Then I should see the message "Product 3001 does not exist"
