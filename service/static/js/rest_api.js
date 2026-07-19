@@ -61,4 +61,76 @@ $(function () {
         });
     });
 
+    // ****************************************
+    // Activate a Product
+    // ****************************************
+
+    $("#activate-btn").click(function () {
+        let sku = $("#product_sku").val();
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/products/${sku}/activate`,
+            contentType: "application/json",
+        });
+
+        ajax.done(function(res) {
+            update_form_data(res);
+            flash_message("Success: product activated");
+        });
+
+        ajax.fail(function(res) {
+            flash_message(res.responseJSON.message);
+        });
+    });
+
+
+    // ****************************************
+    // Deactivate a Product
+    // ****************************************
+
+    $("#deactivate-btn").click(function () {
+        let sku = $("#product_sku").val();
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/products/${sku}/deactivate`,
+            contentType: "application/json",
+        });
+
+        ajax.done(function(res) {
+            update_form_data(res);
+            flash_message("Success: product deactivated");
+        });
+
+        ajax.fail(function(res) {
+            flash_message(res.responseJSON.message);
+        });
+    });
+
+
+    $("#discontinue-btn").click(function () {
+
+        let sku = $("#product_sku").val();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/products/${sku}/discontinue`,
+            contentType: "application/json"
+        });
+
+        ajax.done(function (res) {
+            update_form_data(res);
+            flash_message("Success: product discontinued");
+        });
+
+        ajax.fail(function (res) {
+            flash_message(res.responseJSON.message);
+        });
+    });
+
 })

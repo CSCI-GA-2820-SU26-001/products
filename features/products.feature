@@ -26,3 +26,67 @@ Scenario: Create a Product
     And I select "ACTIVE" in the "State" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
+
+Scenario: Deactivate a Product
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "ACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+    And I should see "ACTIVE" in the "State" dropdown
+
+    When I press the "Deactivate" button
+    Then I should see the message "Success: product deactivated"
+    And I should see "INACTIVE" in the "State" dropdown
+
+Scenario: Activate a Product
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "INACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+    And I should see "INACTIVE" in the "State" dropdown
+
+    When I press the "Activate" button
+    Then I should see the message "Success: product activated"
+    And I should see "ACTIVE" in the "State" dropdown
+
+Scenario: Discontinue a Product
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "INACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+    And I should see "INACTIVE" in the "State" dropdown
+
+    When I press the "Discontinue" button
+    Then I should see the message "Success: product discontinued"
+    And I should see "DISCONTINUED" in the "State" dropdown
+
+Scenario: Deactivate an Inactive Product
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "INACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+    And I should see "INACTIVE" in the "State" dropdown
+
+    When I press the "Deactivate" button
+    Then I should see the message "Success: product deactivated"
+    And I should see "INACTIVE" in the "State" dropdown
