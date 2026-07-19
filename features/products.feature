@@ -90,3 +90,30 @@ Scenario: Deactivate an Inactive Product
     When I press the "Deactivate" button
     Then I should see the message "Success: product deactivated"
     And I should see "INACTIVE" in the "State" dropdown
+
+Scenario: Filter Products by Price
+    When I visit the "Home Page"
+    And I set the "Min Price" to "20.00"
+    And I set the "Max Price" to "100.00"
+    And I press the "Filter" button
+    Then I should see the filtered products in the table
+
+Scenario: Filter Products by Price with No Matches
+    When I visit the "Home Page"
+    And I set the "Min Price" to "1000.00"
+    And I set the "Max Price" to "2000.00"
+    And I press the "Filter" button
+    Then I should see an empty list
+    
+Scenario: Filter Products by Price with a Non-Numeric Value
+    When I visit the "Home Page"
+    And I set the "Min Price" to "abc"
+    And I press the "Filter" button
+    Then I should see the message "Invalid min_price value: 'abc'. Must be a number."
+
+Scenario: Filter Products by Price with Min Greater Than Max
+    When I visit the "Home Page"
+    And I set the "Min Price" to "100.00"
+    And I set the "Max Price" to "20.00"
+    And I press the "Filter" button
+    Then I should see the message "min_price cannot be greater than max price."
