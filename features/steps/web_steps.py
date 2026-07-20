@@ -269,3 +269,42 @@ def step_impl(context: Any) -> None:
     cells = rows[0].find_elements(By.TAG_NAME, "td")
     assert len(cells) == 1, "Expected the empty-state row to span a single cell"
     assert "No products found" in cells[0].text
+
+@then('I should see the product "{sku}" in the filtered table')
+def step_impl(context: Any, sku: str) -> None:
+    """Verify that a product SKU appears in the filtered results table."""
+    WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located(
+            (By.CSS_SELECTOR, "#filter_results tbody")
+        )
+    )
+
+    rows = context.driver.find_elements(By.CSS_SELECTOR, "#filter_results tbody tr")
+
+    found = False
+    for row in rows:
+        cells = row.find_elements(By.TAG_NAME, "td")
+        if len(cells) > 1 and cells[0].text == sku:
+            found = True
+            break
+
+    assert found, f"Expected product SKU {sku} in filtered table"
+
+
+@then('I should not see the product "{sku}" in the filtered table')
+def step_impl(context: Any, sku: str) -> None:
+    """Verify that a product SKU does not appear in the filtered results table."""
+    WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located(
+            (By.CSS_SELECTOR, "#filter_results tbody")
+        )
+    )
+
+    rows = context.driver.find_elements(By.CSS_SELECTOR, "#filter_results tbody tr")
+
+    for row in rows:
+        cells = row.find_elements(By.TAG_NAME, "td")
+        if len(cells) > 1:
+            assert cells[0].text != sku, (
+                f"Did not expect product SKU {sku} in filtered table"
+            )
