@@ -167,7 +167,7 @@ def step_impl(context: Any, message: str) -> None:
         save_screenshot(context, "flash_message_timeout")
         raise AssertionError(
             f'Expected flash message "{message}" but it showed "{actual}". '
-            f'Screenshot saved to ./captures/flash_message_timeout.png'
+            f"Screenshot saved to ./captures/flash_message_timeout.png"
         ) from None
 
 
@@ -216,3 +216,95 @@ def step_impl(context: Any) -> None:
     )
     element.clear()
     element.send_keys(context.clipboard)
+
+
+# --- Filtering product ----#
+@then("I should see the filtered products in the table")
+def step_impl(context: Any) -> None:
+    """Verify every row in the filter results table falls within the entered price range"""
+    min_element = context.driver.find_element(By.ID, ID_PREFIX + "min_price")
+    max_element = context.driver.find_element(By.ID, ID_PREFIX + "max_price")
+    min_value = min_element.get_attribute("value")
+    max_value = max_element.get_attribute("value")
+    min_price = float(min_value) if min_value else None
+    max_price = float(max_value) if max_value else None
+
+    WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located(
+            (By.CSS_SELECTOR, "#filter_results tbody")
+        )
+    )
+
+    rows = context.driver.find_elements(By.CSS_SELECTOR, "#filter_results tbody tr")
+    assert len(rows) > 0, "Expected the filter results table to have at least one row"
+
+    for row in rows:
+        cells = row.find_elements(By.TAG_NAME, "td")
+        if len(cells) == 1:
+            # Empty-state row: "No products found in this price range."
+            continue
+        price = float(cells[3].text)
+        if min_price is not None:
+            assert (
+                price >= min_price
+            ), f"Product priced {price} is below the min price {min_price}"
+        if max_price is not None:
+            assert (
+                price <= max_price
+            ), f"Product priced {price} is above the max price {max_price}"
+
+
+@then("I should see an empty list")
+def step_impl(context: Any) -> None:
+    """Verify the filter results table shows no product rows"""
+    WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located(
+            (By.CSS_SELECTOR, "#filter_results tbody")
+        )
+    )
+
+    rows = context.driver.find_elements(By.CSS_SELECTOR, "#filter_results tbody tr")
+    assert len(rows) == 1, f"Expected a single empty-state row, found {len(rows)}"
+
+    cells = rows[0].find_elements(By.TAG_NAME, "td")
+    assert len(cells) == 1, "Expected the empty-state row to span a single cell"
+    assert "No products found" in cells[0].text
+
+@then('I should see the product "{sku}" in the filtered table')
+def step_impl(context: Any, sku: str) -> None:
+    """Verify that a product SKU appears in the filtered results table."""
+    WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located(
+            (By.CSS_SELECTOR, "#filter_results tbody")
+        )
+    )
+
+    rows = context.driver.find_elements(By.CSS_SELECTOR, "#filter_results tbody tr")
+
+    found = False
+    for row in rows:
+        cells = row.find_elements(By.TAG_NAME, "td")
+        if len(cells) > 1 and cells[0].text == sku:
+            found = True
+            break
+
+    assert found, f"Expected product SKU {sku} in filtered table"
+
+
+@then('I should not see the product "{sku}" in the filtered table')
+def step_impl(context: Any, sku: str) -> None:
+    """Verify that a product SKU does not appear in the filtered results table."""
+    WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located(
+            (By.CSS_SELECTOR, "#filter_results tbody")
+        )
+    )
+
+    rows = context.driver.find_elements(By.CSS_SELECTOR, "#filter_results tbody tr")
+
+    for row in rows:
+        cells = row.find_elements(By.TAG_NAME, "td")
+        if len(cells) > 1:
+            assert cells[0].text != sku, (
+                f"Did not expect product SKU {sku} in filtered table"
+            )

@@ -14,10 +14,23 @@ $(function () {
         $("#product_state").val(res.state);
     }
 
-    // Updates the flash message area
+    // Updates the flash message area and pops it up above the screen
     function flash_message(message) {
+        let $banner = $("#flash_banner");
+        let isError = /bad request|not found|conflict|unsupported|error|does not exist/i.test(message);
+
+        $banner.removeClass("alert-success alert-danger");
+        $banner.addClass(isError ? "alert-danger" : "alert-success");
+
         $("#flash_message").empty();
         $("#flash_message").append(message);
+
+        $banner.stop(true, true).show();
+
+        clearTimeout(flash_message.timer);
+        flash_message.timer = setTimeout(function () {
+            $banner.fadeOut(400);
+        }, 4000);
     }
 
     // ****************************************
@@ -58,6 +71,41 @@ $(function () {
 
         ajax.fail(function(res){
             flash_message(res.responseJSON.message)
+        });
+    });
+
+    // ****************************************
+    // Retrieve a Product
+    // ****************************************
+
+    $("#retrieve-btn").click(function () {
+
+        let sku = $("#product_sku").val();
+
+        $("#flash_message").empty();
+
+        if (!sku) {
+            flash_message("Please enter a SKU");
+            return;
+        }
+
+        let ajax = $.ajax({
+            type: "GET",
+            url: "/products/" + sku,
+            contentType: "application/json"
+        });
+
+        ajax.done(function(res) {
+            update_form_data(res);
+            flash_message("Success");
+        });
+
+        ajax.fail(function(res) {
+            if (res.status === 404) {
+                flash_message("Product " + sku + " does not exist");
+            } else {
+                flash_message(res.responseJSON.message);
+            }
         });
     });
 
@@ -183,6 +231,97 @@ $(function () {
             flash_message(res.responseJSON.message)
         });
 
+    });
+
+    // ****************************************
+    // Filter Products by Price
+    // ****************************************
+
+    $("#filter-btn").click(function () {
+
+        let min_price = $("#product_min_price").val();
+        let max_price = $("#product_max_price").val();
+
+        let queryParams = [];
+        if (min_price) {
+            queryParams.push("min_price=" + encodeURIComponent(min_price));
+        }
+        if (max_price) {
+            queryParams.push("price=" + encodeURIComponent(max_price));
+        }
+        let queryString = queryParams.join("&");
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "GET",
+            url: `/products?${queryString}`,
+            contentType: "application/json",
+            data: ''
+        })
+
+        ajax.done(function(res){
+            $("#filter_results tbody").remove();
+            if (res.length === 0) {
+                let empty = '<tbody><tr><td colspan="6" class="text-center">No products found in this price range.</td></tr></tbody>';
+                $("#filter_results table").append(empty);
+                flash_message("Success")
+                return;
+            }
+            let rows = '<tbody>';
+            for (let i = 0; i < res.length; i++) {
+                let product = res[i];
+                rows += `<tr id="filter_row_${i}"><td>${product.sku}</td><td>${product.name}</td><td>${product.description}</td><td>${product.price}</td><td>${product.image}</td><td>${product.state}</td></tr>`;
+            }
+            rows += '</tbody>';
+            $("#filter_results table").append(rows);
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+    });
+
+    // ****************************************
+    // Update a Product
+    // ****************************************
+
+    $("#update-btn").click(function () {
+
+        let sku = $("#product_sku").val();
+        let name = $("#product_name").val();
+        let description = $("#product_description").val();
+        let price = $("#product_price").val();
+        let image = $("#product_image").val();
+        let state = $("#product_state").val();
+
+        let data = {
+            "sku": sku ? parseInt(sku) : undefined,
+            "name": name,
+            "description": description,
+            "price": price ? parseFloat(price) : undefined,
+            "image": image,
+            "state": state
+        };
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: "/products/" + sku,
+            contentType: "application/json",
+            data: JSON.stringify(data),
+        });
+
+        ajax.done(function(res) {
+            update_form_data(res);
+            flash_message("Success");
+        });
+
+        ajax.fail(function(res) {
+            flash_message(res.responseJSON.message);
+        });
     });
 
 })

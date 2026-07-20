@@ -27,6 +27,46 @@ Scenario: Create a Product
     And I press the "Create" button
     Then I should see the message "Success"
 
+Scenario: Retrieve a Product
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "INACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+
+    When I set the "SKU" to "3002"
+    And I select "ACTIVE" in the "State" dropdown
+    Then I should see the message "Success"
+
+    When I set the "SKU" to "3001"
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "INACTIVE" in the "State" dropdown
+    And I should see "3001" in the "SKU" field
+    And I should see "Wireless Mouse" in the "Name" field
+    And I should see "Ergonomic wireless mouse with silent click technology" in the "Description" field
+    And I should see "29.99" in the "Price" field
+    And I should see "https://example.com/images/wireless-mouse.jpg" in the "Image" field
+
+Scenario: Retrieve a Product
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "INACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+
+    When I set the "SKU" to "3002"
+    And I press the "Retrieve" button
+    Then I should see the message "Product 3002 does not exist"
+
 Scenario: Deactivate a Product
     When I visit the "Home Page"
     And I set the "SKU" to "3001"
@@ -99,3 +139,77 @@ Scenario: List Products
     And I should see "Mechanical Keyboard" in the results
     And I should see "USB-C Hub" in the results
     And I should see "Noise Cancelling Headphones" in the results
+    
+Scenario: Filter Products by Price
+    When I visit the "Home Page"
+    And I set the "Min Price" to "20.00"
+    And I set the "Max Price" to "100.00"
+    And I press the "Filter" button
+    Then I should see the filtered products in the table
+
+Scenario: Filter Products by Price with No Matches
+    When I visit the "Home Page"
+    And I set the "Min Price" to "1000.00"
+    And I set the "Max Price" to "2000.00"
+    And I press the "Filter" button
+    Then I should see an empty list
+    
+Scenario: Filter Products by Price with a Non-Numeric Value
+    When I visit the "Home Page"
+    And I set the "Min Price" to "abc"
+    And I press the "Filter" button
+    Then I should see the message "Invalid min_price value: 'abc'. Must be a number."
+
+Scenario: Filter Products by Price with Min Greater Than Max
+    When I visit the "Home Page"
+    And I set the "Min Price" to "100.00"
+    And I set the "Max Price" to "20.00"
+    And I press the "Filter" button
+    Then I should see the message "min_price cannot be greater than max price."
+
+Scenario: Update a Product
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "ACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+
+    When I set the "Min Price" to "29.99"
+    And I set the "Max Price" to "29.99"
+    And I press the "Filter" button
+    Then I should see the product "3001" in the filtered table
+
+    When I set the "Price" to "30.00"
+    And I press the "Update" button
+    And I set the "Min Price" to "29.99"
+    And I set the "Max Price" to "29.99"
+    And I press the "Filter" button
+    Then I should not see the product "3001" in the filtered table
+
+    When I set the "Min Price" to "30.00"
+    And I set the "Max Price" to "30.00"
+    And I press the "Filter" button
+    Then I should see the product "3001" in the filtered table
+
+Scenario: Update a Product
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "ACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+
+    When I set the "SKU" to "3002"
+    And I press the "Update" button
+    Then I should see the message "Product with id '3002' was not found."
+
+
+
+

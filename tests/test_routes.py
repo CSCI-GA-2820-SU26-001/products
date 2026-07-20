@@ -303,6 +303,13 @@ class TestProductService(TestCase):
         skus = {product["sku"] for product in data}
         self.assertEqual(skus, {241})
 
+    def test_query_products_by_price_range_min_greater_than_max(self):
+        """It should return 400 when min_price is greater than price (max)"""
+        response = self.client.get(f"{BASE_URL}?min_price=75.00&price=20.00")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("min_price cannot be greater than max price", data["message"])
+
     def test_query_products_without_price_unchanged(self):
         """It should still return every product when no price query is given"""
         self._create_product_with_price(250, 10.00)
