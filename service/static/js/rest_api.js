@@ -75,6 +75,41 @@ $(function () {
     });
 
     // ****************************************
+    // Retrieve a Product
+    // ****************************************
+
+    $("#retrieve-btn").click(function () {
+
+        let sku = $("#product_sku").val();
+
+        $("#flash_message").empty();
+
+        if (!sku) {
+            flash_message("Please enter a SKU");
+            return;
+        }
+
+        let ajax = $.ajax({
+            type: "GET",
+            url: "/products/" + sku,
+            contentType: "application/json"
+        });
+
+        ajax.done(function(res) {
+            update_form_data(res);
+            flash_message("Success");
+        });
+
+        ajax.fail(function(res) {
+            if (res.status === 404) {
+                flash_message("Product " + sku + " does not exist");
+            } else {
+                flash_message(res.responseJSON.message);
+            }
+        });
+    });
+
+    // ****************************************
     // Activate a Product
     // ****************************************
 
