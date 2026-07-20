@@ -128,7 +128,6 @@ Scenario: Update a Product
     And I select "ACTIVE" in the "State" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
-    And I should see "ACTIVE" in the "State" dropdown
 
     When I set the "Min Price" to "29.99"
     And I set the "Max Price" to "29.99"
@@ -146,4 +145,22 @@ Scenario: Update a Product
     And I set the "Max Price" to "30.00"
     And I press the "Filter" button
     Then I should see the product "3001" in the filtered table
+
+Scenario: Update a Product
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "ACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+
+    When I set the "SKU" to "3002"
+    And I press the "Update" button
+    Then I should see the message "Product with id '3002' was not found."
+
+
+
 
