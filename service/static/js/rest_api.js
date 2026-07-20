@@ -133,4 +133,56 @@ $(function () {
         });
     });
 
+    // ****************************************
+    // Search for a Product
+    // ****************************************
+
+    $("#search-btn").click(function () {
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "GET",
+            url: `/products`,
+            contentType: "application/json",
+            data: ''
+        })
+
+        ajax.done(function(res){
+            //alert(res.toSource())
+            $("#search_results").empty();
+            let table = '<table class="table table-striped" cellpadding="10">'
+            table += '<thead><tr>'
+            table += '<th class="col-md-2">SKU</th>'
+            table += '<th class="col-md-2">Name</th>'
+            table += '<th class="col-md-2">Description</th>'
+            table += '<th class="col-md-2">Price</th>'
+            table += '<th class="col-md-2">Image</th>'
+            table += '<th class="col-md-2">State</th>'
+            table += '</tr></thead><tbody>'
+            let firstproduct = "";
+            for(let i = 0; i < res.length; i++) {
+                let product = res[i];
+                table +=  `<tr id="row_${i}"><td>${product.sku}</td><td>${product.name}</td><td>${product.description}</td><td>${product.price}</td><td><img src="${product.image}" width="35"></td><td>${product.state}</td></tr>`;
+                if (i == 0) {
+                    firstproduct = product;
+                }
+            }
+            table += '</tbody></table>';
+            $("#search_results").append(table);
+
+            // copy the first result to the form
+            if (firstproduct != "") {
+                update_form_data(firstproduct)
+            }
+
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+
+    });
+
 })
