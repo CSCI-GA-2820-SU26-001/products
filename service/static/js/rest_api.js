@@ -231,4 +231,45 @@ $(function () {
         });
     });
 
+    // ****************************************
+    // Update a Product
+    // ****************************************
+
+    $("#update-btn").click(function () {
+
+        let sku = $("#product_sku").val();
+        let name = $("#product_name").val();
+        let description = $("#product_description").val();
+        let price = $("#product_price").val();
+        let image = $("#product_image").val();
+        let state = $("#product_state").val();
+
+        let data = {
+            "sku": sku ? parseInt(sku) : undefined,
+            "name": name,
+            "description": description,
+            "price": price ? parseFloat(price) : undefined,
+            "image": image,
+            "state": state
+        };
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: "/products/" + sku,
+            contentType: "application/json",
+            data: JSON.stringify(data),
+        });
+
+        ajax.done(function(res) {
+            update_form_data(res);
+            flash_message("Success");
+        });
+
+        ajax.fail(function(res) {
+            flash_message(res.responseJSON.message);
+        });
+    });
+
 })
