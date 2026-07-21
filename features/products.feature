@@ -131,6 +131,15 @@ Scenario: Deactivate an Inactive Product
     Then I should see the message "Success: product deactivated"
     And I should see "INACTIVE" in the "State" dropdown
 
+Scenario: List Products
+    When I visit the "Home Page"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "Wireless Mouse" in the results
+    And I should see "Mechanical Keyboard" in the results
+    And I should see "USB-C Hub" in the results
+    And I should see "Noise Cancelling Headphones" in the results
+    
 Scenario: Filter Products by Price
     When I visit the "Home Page"
     And I set the "Min Price" to "20.00"
