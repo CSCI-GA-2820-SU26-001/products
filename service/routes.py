@@ -24,8 +24,20 @@ and Delete Product
 from decimal import Decimal, InvalidOperation
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
+from flask_restx import Api
 from service.common import status
 from service.models import Product, ProductState  # HTTP Status Codes
+
+api = Api(
+    app,
+    version="1.0.0",
+    title="Product REST API Service",
+    description="This is a sample server Product manager server.",
+    default="products",
+    default_label="Product operations",
+    doc="/apidocs",  # default also could use doc='/apidocs/'
+    prefix="/api",
+)
 
 
 ######################################################################
@@ -138,7 +150,11 @@ def list_products():
     max_price = _parse_price_query_arg("price")
     min_price = _parse_price_query_arg("min_price")
 
-    if min_price is not None and max_price is not None and Decimal(min_price) > Decimal(max_price):
+    if (
+        min_price is not None
+        and max_price is not None
+        and Decimal(min_price) > Decimal(max_price)
+    ):
         abort(
             status.HTTP_400_BAD_REQUEST,
             "min_price cannot be greater than max price.",
