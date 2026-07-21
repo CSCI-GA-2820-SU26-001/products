@@ -278,7 +278,7 @@ $(function () {
 
             ajax.done(function(){
                 clear_form_data()
-                flash_message("Product has been Deleted!")
+                flash_message(`Product #${sku} was deleted from the inventory`)
             });
 
             ajax.fail(function(){
@@ -287,7 +287,7 @@ $(function () {
         });
 
         check.fail(function(){
-            flash_message(`Product ${sku} does not exist`)
+            flash_message(`Product #${sku} does not exist`)
         });
     });
 

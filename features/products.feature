@@ -221,7 +221,15 @@ Scenario: Delete a Product
     And I press the "Create" button
     Then I should see the message "Success"
     When I press the "Delete" button
-    Then I should see the message "Deleted"
+    Then I should see the message "Product #3001 was deleted from the inventory"
+    When I press the "Filter" button
+    Then I should not see the product "3001" in the filtered table
     When I set the "SKU" to "3001"
     And I press the "Delete" button
-    Then I should see the message "Product 3001 does not exist"
+    Then I should see the message "Product #3001 does not exist"
+
+Scenario: Delete a Product with a Non-Numeric SKU
+    When I visit the "Home Page"
+    And I set the "SKU" to "abc"
+    And I press the "Delete" button
+    Then I should see the message "Product #abc does not exist"
