@@ -245,6 +245,7 @@ class ProductResource(Resource):
     # ------------------------------------------------------------
     # DELETE A PRODUCT
     # ------------------------------------------------------------
+    @ns.response(status.HTTP_204_NO_CONTENT, "Product deleted")
     def delete(self, sku):
         """
         Delete a Product

@@ -262,7 +262,7 @@ $(function () {
         // to tell the two cases apart.
         let check = $.ajax({
             type: "GET",
-            url: `/products/${sku}`,
+            url: `/api/products/${sku}`,
             contentType: "application/json",
             cache: false,
             data: ''
@@ -271,7 +271,7 @@ $(function () {
         check.done(function(){
             let ajax = $.ajax({
                 type: "DELETE",
-                url: `/products/${sku}`,
+                url: `/api/products/${sku}`,
                 contentType: "application/json",
                 data: '',
             })
