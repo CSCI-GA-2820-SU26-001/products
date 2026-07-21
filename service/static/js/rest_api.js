@@ -33,6 +33,16 @@ $(function () {
         }, 4000);
     }
 
+    /// Clears all form fields
+    function clear_form_data() {
+        $("#product_sku").val("");
+        $("#product_name").val("");
+        $("#product_description").val("");
+        $("#product_price").val("");
+        $("#product_image").val("");
+        $("#product_state").val("ACTIVE");
+    }
+
     // ****************************************
     // Create a Product
     // ****************************************
@@ -56,7 +66,6 @@ $(function () {
         };
 
         $("#flash_message").empty();
-
         let ajax = $.ajax({
             type: "POST",
             url: "/products",
@@ -231,6 +240,55 @@ $(function () {
             flash_message(res.responseJSON.message)
         });
 
+    });
+
+    // ****************************************
+    // Delete a Product
+    // ****************************************
+
+    $("#delete-btn").click(function () {
+
+        let sku = $("#product_sku").val();
+
+        $("#flash_message").empty();
+
+        if (!sku) {
+            flash_message("Enter a SKU to delete.")
+            return;
+        }
+
+        // Check the product exists first — DELETE always returns 204
+        // whether or not it found something, so this is the only way
+        // to tell the two cases apart.
+        let check = $.ajax({
+            type: "GET",
+            url: `/products/${sku}`,
+            contentType: "application/json",
+            cache: false,
+            data: ''
+        })
+
+        check.done(function(){
+            let ajax = $.ajax({
+                type: "DELETE",
+                url: `/products/${sku}`,
+                contentType: "application/json",
+                data: '',
+            })
+
+            ajax.done(function(){
+                clear_form_data()
+                flash_message(`Product #${sku} was deleted from the inventory`)
+            });
+
+            ajax.fail(function(){
+                flash_message("Server error!")
+            });
+        });
+
+        check.fail(function(){
+            flash_message(`Product #${sku} does not exist`)
+        });
     });
 
     // ****************************************

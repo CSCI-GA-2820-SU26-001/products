@@ -99,6 +99,11 @@ def step_impl(context: Any, element_name: str, text_string: str) -> None:
     element_id = ID_PREFIX + element_name.lower().replace(" ", "_")
     element = context.driver.find_element(By.ID, element_id)
     _set_input_value(context, element, text_string)
+    # Remember what was typed so later steps (e.g. after the field is
+    # cleared by a Delete/Create response) can still refer to it.
+    if not hasattr(context, "field_values"):
+        context.field_values = {}
+    context.field_values[element_name] = text_string
 
 
 @when('I select "{text}" in the "{element_name}" dropdown')
