@@ -24,7 +24,7 @@ and Delete Product
 from decimal import Decimal, InvalidOperation
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
-from flask_restx import Api
+from flask_restx import Api, fields
 from service.common import status
 from service.models import Product, ProductState  # HTTP Status Codes
 
@@ -37,6 +37,22 @@ api = Api(
     default_label="Product operations",
     doc="/apidocs",  # default also could use doc='/apidocs/'
     prefix="/api",
+)
+
+ns = api.default_namespace
+
+product_model = api.model(
+    "Product",
+    {
+        "sku": fields.Integer(readonly=True, description="Unique product identifier"),
+        "name": fields.String(required=True, description="Product name"),
+        "description": fields.String(required=True, description="Product description"),
+        "price": fields.Float(required=True, description="Product price"),
+        "image": fields.String(required=True, description="Product image URL"),
+        "state": fields.String(
+            enum=["ACTIVE", "INACTIVE", "DISCONTINUED"], description="Product state"
+        ),
+    },
 )
 
 
@@ -78,6 +94,8 @@ def index():
 ######################################################################
 
 
+@ns.expect(product_model)
+@ns.marshal_with(product_model, code=status.HTTP_201_CREATED)
 @app.route("/products", methods=["POST"])
 def create_product():
     """Creates a new Product
@@ -108,7 +126,7 @@ def create_product():
     product.create()
     location_url = url_for("get_product", sku=product.sku, _external=True)
     return (
-        jsonify(product.serialize()),
+        product.serialize(),
         status.HTTP_201_CREATED,
         {"Location": location_url},
     )
@@ -117,6 +135,7 @@ def create_product():
 ######################################################################
 # READ A PRODUCT
 ######################################################################
+@ns.marshal_with(product_model)
 @app.route("/products/<int:sku>", methods=["GET"])
 def get_product(sku):
     """Retrieves a single Product
@@ -129,12 +148,13 @@ def get_product(sku):
     product = Product.find(sku)
     if not product:
         abort(status.HTTP_404_NOT_FOUND, f"Product with sku '{sku}' was not found.")
-    return jsonify(product.serialize()), status.HTTP_200_OK
+    return product.serialize(), status.HTTP_200_OK
 
 
 ######################################################################
 # LIST ALL PRODUCTS
 ######################################################################
+@ns.marshal_with(product_model)
 @app.route("/products", methods=["GET"])
 def list_products():
     """Returns all of the Products
@@ -173,7 +193,7 @@ def list_products():
 
     results = [product.serialize() for product in products]
     app.logger.info("Returning %d product", len(results))
-    return jsonify(results), status.HTTP_200_OK
+    return results, status.HTTP_200_OK
 
 
 ######################################################################
@@ -201,6 +221,8 @@ def delete_products(by_sku):
 ######################################################################
 # UPDATE AN EXISTING PRODUCT
 ######################################################################
+@ns.expect(product_model)
+@ns.marshal_with(product_model)
 @app.route("/products/<int:by_sku>", methods=["PUT"])
 def update_products(by_sku):
     """
@@ -232,6 +254,7 @@ def update_products(by_sku):
 ######################################################################
 # ACTIVATE AN EXISTING PRODUCT
 ######################################################################
+@ns.marshal_with(product_model)
 @app.route("/products/<int:by_sku>/activate", methods=["PUT"])
 def activate_product(by_sku):
     """
@@ -256,6 +279,7 @@ def activate_product(by_sku):
 ######################################################################
 # DEACTIVATE AN EXISTING PRODUCT
 ######################################################################
+@ns.marshal_with(product_model)
 @app.route("/products/<int:by_sku>/deactivate", methods=["PUT"])
 def deactivate_product(by_sku):
     """
@@ -280,6 +304,7 @@ def deactivate_product(by_sku):
 ######################################################################
 # DISCONTINUE AN EXISTING PRODUCT
 ######################################################################
+@ns.marshal_with(product_model)
 @app.route("/products/<int:by_sku>/discontinue", methods=["PUT"])
 def discontinue_product(by_sku):
     """
