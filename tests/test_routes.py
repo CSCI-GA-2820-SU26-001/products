@@ -33,7 +33,7 @@ from tests.factories import ProductFactory
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:pgs3cr3t@postgres:5432/postgres"
 )
-BASE_URL = "/products"
+BASE_URL = "/api/products"
 
 
 ######################################################################
@@ -113,7 +113,7 @@ class TestProductService(TestCase):
 
     def test_create_product(self):
         """
-        Test the creation of new product in route /products
+        Test the creation of new product in route /api/products
         It should create a new product
         """
         new_product = {
@@ -123,7 +123,7 @@ class TestProductService(TestCase):
             "price": 9.99,
             "image": "http://example.com/image.jpg",
         }
-        response = self.client.post("/products", json=new_product)
+        response = self.client.post("/api/products", json=new_product)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         data = response.get_json()
         logging.debug("JSON results: %s", data)
@@ -143,11 +143,11 @@ class TestProductService(TestCase):
             "price": 9.99,
             "image": "http://example.com/image.jpg",
         }
-        response = self.client.post("/products", json=new_product)
+        response = self.client.post("/api/products", json=new_product)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # attempt to create another product with the same sku
-        response = self.client.post("/products", json=new_product)
+        response = self.client.post("/api/products", json=new_product)
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         data = response.get_json()
         self.assertIn("already exists", data["message"])
@@ -161,12 +161,12 @@ class TestProductService(TestCase):
             "name": "Test Product",
             # Missing description, price, and image
         }
-        response = self.client.post("/products", json=new_product)
+        response = self.client.post("/api/products", json=new_product)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_method_not_allowed(self):
         """It should not allow unsupported HTTP methods"""
-        response = self.client.put("/products")
+        response = self.client.put("/api/products")
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_unsupported_media_type(self):
@@ -178,12 +178,12 @@ class TestProductService(TestCase):
             "price": 9.99,
             "image": "http://example.com/image.jpg",
         }
-        response = self.client.post("/products", data=str(new_product))
+        response = self.client.post("/api/products", data=str(new_product))
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_get_product(self):
         """
-        It should retrieve an existing product in route /productsGET /products/{sku}
+        It should retrieve an existing product in route /api/productsGET /api/products/{sku}
         """
         new_product = {
             "sku": 42,
@@ -192,8 +192,8 @@ class TestProductService(TestCase):
             "price": 5.00,
             "image": "http://example.com/img.jpg",
         }
-        self.client.post("/products", json=new_product)
-        response = self.client.get("/products/42")
+        self.client.post("/api/products", json=new_product)
+        response = self.client.get("/api/products/42")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["sku"], 42)
@@ -653,12 +653,12 @@ class TestProductService(TestCase):
 
     def test_not_found(self):
         """It should return 404 for non-existent resources"""
-        response = self.client.get("/products/999")
+        response = self.client.get("/api/products/999")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_product_not_found_zero_sku(self):
         """It should return 404 when retrieving a product with SKU that does not exist"""
-        response = self.client.get("/products/0")
+        response = self.client.get("/api/products/0")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         data = response.get_json()
         self.assertIn("0", str(data))
@@ -666,7 +666,7 @@ class TestProductService(TestCase):
     def test_unsupported_media_type_wrong_content_type(self):
         """It should reject requests with wrong Content-Type header"""
         response = self.client.post(
-            "/products",
+            "/api/products",
             data='{"sku": 1}',
             content_type="text/plain",
         )
@@ -680,7 +680,7 @@ class TestProductService(TestCase):
                 "Unexpected error"
             )
             response = self.client.post(
-                "/products",
+                "/api/products",
                 json={
                     "sku": 1,
                     "name": "Test Product",

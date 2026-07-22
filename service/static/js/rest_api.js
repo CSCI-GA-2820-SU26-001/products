@@ -68,7 +68,7 @@ $(function () {
         $("#flash_message").empty();
         let ajax = $.ajax({
             type: "POST",
-            url: "/products",
+            url: "/api/products",
             contentType: "application/json",
             data: JSON.stringify(data),
         });
@@ -100,7 +100,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: "/products/" + sku,
+            url: "/api/products/" + sku,
             contentType: "application/json"
         });
 
@@ -129,7 +129,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/products/${sku}/activate`,
+            url: `/api/products/${sku}/activate`,
             contentType: "application/json",
         });
 
@@ -155,7 +155,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/products/${sku}/deactivate`,
+            url: `/api/products/${sku}/deactivate`,
             contentType: "application/json",
         });
 
@@ -176,7 +176,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/products/${sku}/discontinue`,
+            url: `/api/products/${sku}/discontinue`,
             contentType: "application/json"
         });
 
@@ -200,7 +200,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/products`,
+            url: `/api/products`,
             contentType: "application/json",
             data: ''
         })
@@ -262,7 +262,7 @@ $(function () {
         // to tell the two cases apart.
         let check = $.ajax({
             type: "GET",
-            url: `/products/${sku}`,
+            url: `/api/products/${sku}`,
             contentType: "application/json",
             cache: false,
             data: ''
@@ -271,7 +271,7 @@ $(function () {
         check.done(function(){
             let ajax = $.ajax({
                 type: "DELETE",
-                url: `/products/${sku}`,
+                url: `/api/products/${sku}`,
                 contentType: "application/json",
                 data: '',
             })
@@ -313,7 +313,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/products?${queryString}`,
+            url: `/api/products?${queryString}`,
             contentType: "application/json",
             data: ''
         })
@@ -367,7 +367,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: "/products/" + sku,
+            url: "/api/products/" + sku,
             contentType: "application/json",
             data: JSON.stringify(data),
         });
