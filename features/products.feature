@@ -27,6 +27,28 @@ Scenario: Create a Product
     And I press the "Create" button
     Then I should see the message "Success"
 
+Scenario: Create a Product with Invalid SKU input format
+    When I visit the "Home Page"
+    And I set the "SKU" to "abc"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "29.99"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "ACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "The product was not created. Invalid sku format."
+
+Scenario: Create a Product with Invalid Price input format
+    When I visit the "Home Page"
+    And I set the "SKU" to "3001"
+    And I set the "Name" to "Wireless Mouse"
+    And I set the "Description" to "Ergonomic wireless mouse with silent click technology"
+    And I set the "Price" to "abc"
+    And I set the "Image" to "https://example.com/images/wireless-mouse.jpg"
+    And I select "ACTIVE" in the "State" dropdown
+    And I press the "Create" button
+    Then I should see the message "The product was not created. Invalid price format."
+
 Scenario: Retrieve a Product
     When I visit the "Home Page"
     And I set the "SKU" to "3001"
