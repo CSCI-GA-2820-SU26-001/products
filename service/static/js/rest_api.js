@@ -56,16 +56,27 @@ $(function () {
         let image = $("#product_image").val();
         let state = $("#product_state").val();
 
+        $("#flash_message").empty();
+
+        if (!/^\d+$/.test(sku)) {
+            flash_message("The product was not created. Invalid sku format.");
+            return;
+        }
+
+        if (price === "" || isNaN(parseFloat(price)) || !isFinite(Number(price))) {
+            flash_message("The product was not created. Invalid price format.");
+            return;
+        }
+
         let data = {
-            "sku": sku ? parseInt(sku) : undefined,
+            "sku": parseInt(sku, 10),
             "name": name,
             "description": description,
-            "price": price ? parseFloat(price) : undefined,
+            "price": parseFloat(price),
             "image": image,
             "state": state
         };
 
-        $("#flash_message").empty();
         let ajax = $.ajax({
             type: "POST",
             url: "/api/products",
