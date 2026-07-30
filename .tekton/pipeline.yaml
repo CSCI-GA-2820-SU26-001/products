@@ -52,8 +52,6 @@ spec:
             value: openshift-pipelines
         resolver: cluster
       workspaces:
-        - name: ssh-directory
-          workspace: ''
         - name: output
           workspace: pipeline-workspace
   workspaces:
