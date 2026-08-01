@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: products
+  labels:
+    app: products
+
+spec:
+  to:
+    kind: Service
+    name: products
+  
+  port:
+    targetPort: http
