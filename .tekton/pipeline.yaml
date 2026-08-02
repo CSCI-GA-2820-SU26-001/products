@@ -102,7 +102,7 @@ spec:
           value: ./Dockerfile
         - name: CONTEXT
           value: .
-        - name: TLSVERIFY
+        - name: TLS_VERIFY
           value: 'false'
       runAfter:
         - test
