@@ -10,6 +10,10 @@ spec:
     - description: the branch to build
       name: GIT_REF
       type: string
+    - description: the name of the image to build and push
+      name: IMAGE_NAME
+      type: string
+      default: products
   tasks:
     - name: git-clone
       params:
@@ -86,6 +90,32 @@ spec:
       taskRef:
         kind: Task
         name: pylint
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+    - name: build
+      params:
+        - name: IMAGE
+          value: >-
+            image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(params.IMAGE_NAME):$(tasks.git-clone.results.commit)
+        - name: DOCKERFILE
+          value: ./Dockerfile
+        - name: CONTEXT
+          value: .
+        - name: TLSVERIFY
+          value: 'false'
+      runAfter:
+        - test
+        - pylint
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: buildah
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
       workspaces:
         - name: source
           workspace: pipeline-workspace
