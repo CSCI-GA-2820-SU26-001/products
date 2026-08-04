@@ -122,21 +122,6 @@ spec:
       workspaces:
         - name: source
           workspace: pipeline-workspace
-    - name: deploy
-      params:
-        - name: image-name
-          value: >-
-            image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(params.IMAGE_NAME):$(tasks.git-clone.results.COMMIT)
-        - name: manifest-dir
-          value: k8s
-      runAfter:
-        - build
-      taskRef:
-        kind: Task
-        name: deploy-image
-      workspaces:
-        - name: source
-          workspace: pipeline-workspace
     - name: bdd-test
       params:
         - name: base-url
