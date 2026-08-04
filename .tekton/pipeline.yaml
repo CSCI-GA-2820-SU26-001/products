@@ -10,10 +10,10 @@ spec:
     - description: the branch to build
       name: GIT_REF
       type: string
-    - description: the name of the image to build and push
+    - default: products
+      description: the name of the image to build and push
       name: IMAGE_NAME
       type: string
-      default: products
     - description: the url of the running app to test with bdd tests
       name: BASE_URL
       type: string
@@ -99,8 +99,7 @@ spec:
     - name: build
       params:
         - name: IMAGE
-          value: >-
-            image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(params.IMAGE_NAME):$(tasks.git-clone.results.COMMIT)
+          value: 'image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(params.IMAGE_NAME):$(tasks.git-clone.results.COMMIT)'
         - name: DOCKERFILE
           value: ./Dockerfile
         - name: CONTEXT
@@ -131,10 +130,24 @@ spec:
         - name: driver
           value: chrome
       runAfter:
-        - deploy
+        - deploy-image
       taskRef:
         kind: Task
         name: behave
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+    - name: deploy-image
+      params:
+        - name: image-name
+          value: 'image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(params.IMAGE_NAME):$(tasks.git-clone.results.COMMIT)'
+        - name: manifest-dir
+          value: k8s
+      runAfter:
+        - build
+      taskRef:
+        kind: Task
+        name: deploy-image
       workspaces:
         - name: source
           workspace: pipeline-workspace
