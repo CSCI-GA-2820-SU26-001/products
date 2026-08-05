@@ -4,11 +4,12 @@ metadata:
   name: products
   labels:
     app: products
-
 spec:
   to:
     kind: Service
     name: products
-  
   port:
-    targetPort: http
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

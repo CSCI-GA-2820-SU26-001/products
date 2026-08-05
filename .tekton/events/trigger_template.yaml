@@ -26,7 +26,11 @@ spec:
       - name: GIT_REPO
         value: $(tt.params.git-repo-url)
       - name: IMAGE_NAME
-        value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(tt.params.git-repo-name):$(tt.params.git-revision)
+        value: $(tt.params.git-repo-name)
+      - name: GIT_REF
+        value: $(tt.params.git-revision)
+      - name: BASE_URL
+        value: https://products-tadusumilli-dev.apps.rm2.thpm.p1.openshiftapps.com
       workspaces:
       - name: pipeline-workspace
         persistentVolumeClaim:
